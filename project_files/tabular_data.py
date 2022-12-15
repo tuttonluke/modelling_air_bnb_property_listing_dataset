@@ -39,8 +39,22 @@ class AirBnbDataPreparation:
         msno.matrix(self.listing_data)
     
     def clean_description_strings(self):
+        """_summary_
+        """
+        # change string to list
         for index in range(len(self.listing_data["Description"])):
-            self.listing_data["Description"][index] = literal_eval(self.listing_data["Description"][index])            
+            self.listing_data["Description"][index] = literal_eval(self.listing_data["Description"][index]) 
+
+        for index, description in enumerate(self.listing_data["Description"]):
+            for description_index, description_element in enumerate(description):
+                if description_element in ["About this space", 
+                                            "The space", 
+                                            "Guest access", 
+                                            "Other things to note",
+                                            "",
+                                            " "
+                                            ]:
+                    self.listing_data["Description"][index].pop(description_index)
 
     def save_df_as_csv(self):
         """Saves self.listing_data as csv file in current directory.
