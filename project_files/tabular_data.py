@@ -19,7 +19,6 @@ class AirBnbDataPreparation:
         self.listing_data = self.listing_data.drop("Unnamed: 19", axis=1)
         # reset indexes
         self.listing_data.reset_index(drop=True, inplace=True)
-    
 
     def remove_rows_with_missing_ratings(self) -> pd.DataFrame:
         """Removes rows from the self.listing_data that have missing ratings data,
