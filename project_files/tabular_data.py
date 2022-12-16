@@ -35,8 +35,6 @@ class AirBnbDataPreparation:
                                         "Value_rating"
                                         ], inplace=True)
         self.listing_data.reset_index(drop=True, inplace=True)
-        # Visualise DataFrame to ensure the correct result.
-        msno.matrix(self.listing_data)
     
     def clean_description_strings(self):
         """_summary_
@@ -55,19 +53,38 @@ class AirBnbDataPreparation:
                                             " "
                                             ]:
                     self.listing_data["Description"][index].pop(description_index)
+    
+    def set_default_feature_values(self):
+        """Replaces NaN values in the "guests", "beds", "bathrooms", 
+        and "bedrooms" columns with value specified (default 1).
+        """
+        self.listing_data = self.listing_data.fillna({
+            "guests" : 1,
+            "beds" : 1,
+            "bathrooms" : 1,
+            "bedrooms" : 1,
+        })
+    
+    def clean_tabular_data(self):
+        """Groups all cleaning functions, and visualises the dataframe to ensure
+        correct result of cleaning.
+        """
+        self.initial_cleaning()
+        self.remove_rows_with_missing_ratings()
+        self.clean_description_strings()
+        self.set_default_feature_values()
+        # Visualise DataFrame
+        msno.matrix(self.listing_data)
 
     def save_df_as_csv(self):
         """Saves self.listing_data as csv file in current directory.
         """
-        self.listing_data.to_csv("new_listing_data.csv")
-
+        self.listing_data.to_csv("clean_listing.csv")
 #%%
 if __name__ == "__main__":
+    # Initiate class and import raw data
     air_bnb_data = AirBnbDataPreparation()
-    air_bnb_data.initial_cleaning()
-    air_bnb_data.remove_rows_with_missing_ratings()
-    air_bnb_data.clean_description_strings()
-
-    # air_bnb_data.save_df_as_csv()
-    df = air_bnb_data.listing_data
-#%%
+    # clean raw data
+    air_bnb_data.clean_tabular_data()
+    # save clean DataFrame
+    air_bnb_data.save_df_as_csv()
