@@ -12,3 +12,9 @@ Technologies / Skills:
 - Cleaning Data
     - Pandas DataFrame concepts and operations
     - Dealing with missing data (missingno, imputation, interpolation)
+- Amazon Web Services (AWS)
+    - AWS CLI (Command Line Interface)
+    - boto3 SDK for Python
+    - Amazon RDS (Relational Database Service)
+    - Amazon S3 (Simple Storage Service)
+    - Amazon EC2 (Elastic Compute Cloud)
