@@ -5,7 +5,7 @@ from ast import literal_eval
 #%%
 class AirBnbDataPreparation:
     def __init__(self) -> None:
-        self.data_file_path = "tabular_data/listing.csv"
+        self.data_file_path = "tabular_data/tabular_data.csv"
         self.listing_data = pd.read_csv(self.data_file_path)
 
     def initial_cleaning(self):
@@ -78,7 +78,7 @@ class AirBnbDataPreparation:
     def save_df_as_csv(self):
         """Saves self.listing_data as csv file in current directory.
         """
-        self.listing_data.to_csv("tabular_data/clean_listing.csv")
+        self.listing_data.to_csv("tabular_data/clean_tabular_data.csv")
 #%%
 if __name__ == "__main__":
     # Initiate class and import raw data
