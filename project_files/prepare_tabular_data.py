@@ -78,7 +78,7 @@ class AirBnbDataPreparation:
     def save_df_as_csv(self):
         """Saves self.listing_data as csv file in current directory.
         """
-        self.listing_data.to_csv("clean_listing.csv")
+        self.listing_data.to_csv("tabular_data/clean_listing.csv")
 #%%
 if __name__ == "__main__":
     # Initiate class and import raw data
