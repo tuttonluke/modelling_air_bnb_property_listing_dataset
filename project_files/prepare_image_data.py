@@ -65,10 +65,33 @@ class ImageProcessing:
                 )
 
     def resize_images(self):
-        pass
+        """Resises all images to same height and saves the processed image
+        in processed_images folder. Resizing process maintains aspect ratio. All 
+        images in RGB format.
+        """
+        min_height = self.image_df["Height"].min()
+        for image_file_path in self.image_df["File Path"]:
+            # read in image
+            img = cv.imread(f"images/{image_file_path}")
+            # Get image dimensions
+            original_height = img.shape[0]
+            original_width = img.shape[1]
+            # rescale image
+            scale_percent = min_height / original_height
+            resized_height = min_height
+            resized_width = int(original_width * scale_percent)
+            resized_img = cv.resize(img, (resized_width, resized_height), 
+                                    interpolation = cv.INTER_AREA)
+            # save image
+            save_file = image_file_path[37:]
+            cv.imwrite(f"processed_images/{save_file}", 
+                        resized_img)
 # %%
 if __name__ == "__main__":
     image_processor = ImageProcessing()
     image_processor.get_list_of_folders()
     image_processor.get_image_df_info()
-    # image_processor.download_images()                                  
+    # image_processor.download_images()
+    image_processor.resize_images()
+
+    image_df = image_processor.image_df
