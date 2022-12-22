@@ -32,6 +32,10 @@ Images relevant to the AirBnB listings were saved on the cloud using Amazon Web 
 
 (screenshot of rescaled image?)
 
+## Milestone 2: Creating a Regression Model
+Technologies / Skills:
+
+
 
 
 
