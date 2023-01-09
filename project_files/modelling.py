@@ -1,4 +1,4 @@
-#%%
+# %%
 from read_tabular_data import TabularData
 from sklearn.linear_model import SGDRegressor
 from sklearn.pipeline import make_pipeline
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-#%%
+# %%
 if __name__ == "__main__":
     # load in data
     np.random.seed(20)
@@ -53,4 +53,4 @@ if __name__ == "__main__":
     plt.ylabel("Values")
     plt.show() 
 
-#%%
+# %%
