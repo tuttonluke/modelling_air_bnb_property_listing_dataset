@@ -9,7 +9,7 @@ from sklearn.metrics import mean_squared_error
 #%%
 if __name__ == "__main__":
     # load in data
-    np.random.seed(42)
+    np.random.seed(20)
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
 
@@ -30,15 +30,19 @@ if __name__ == "__main__":
                                                                 test_size=0.3
                                                                 )
 
-    model = SGDRegressor()
+    model = LinearRegression()
     model.fit(X_train, y_train)
     
     y_train_pred = model.predict(X_train)
     y_validation_pred = model.predict(X_validation)
     y_test_pred = model.predict(X_test)
 
-    mse_loss = mean_squared_error(y_validation, y_validation_pred)
-    print("Mean Squared Error Loss on Validation data: ", mse_loss)
+    mse_loss_train = mean_squared_error(y_train, y_train_pred)
+    mse_loss_test = mean_squared_error(y_test, y_test_pred)
+    mse_loss_validation = mean_squared_error(y_validation, y_validation_pred)
+    print("Mean Squared Error Loss on Training data: ", mse_loss_train)
+    print("Mean Squared Error Loss on Test data: ", mse_loss_test)
+    print("Mean Squared Error Loss on Validation data: ", mse_loss_validation)
 
     plt.figure()
     plt.scatter(np.arange(50), y_validation_pred[:50], c="r", label="Predictions")
@@ -46,7 +50,7 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel("Sample Numbers")
     plt.ylabel("Values")
-    plt.show()
+    plt.show() 
 
 #%%
 
