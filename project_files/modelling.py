@@ -1,7 +1,8 @@
 #%%
 from read_tabular_data import TabularData
-from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDRegressor
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -30,7 +31,7 @@ if __name__ == "__main__":
                                                                 test_size=0.3
                                                                 )
 
-    model = LinearRegression()
+    model = make_pipeline(StandardScaler(), SGDRegressor())
     model.fit(X_train, y_train)
     
     y_train_pred = model.predict(X_train)
@@ -53,5 +54,3 @@ if __name__ == "__main__":
     plt.show() 
 
 #%%
-
-
