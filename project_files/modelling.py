@@ -1,7 +1,6 @@
 # %%
 from read_tabular_data import TabularData
 from sklearn import metrics
-from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import SGDRegressor
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
@@ -11,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import typing
-import warnings
 # %%
 def split_data(feature_dataframe, label_series, test_size=0.3):
     """Splits feature dataframe into train, test, and validation sets
@@ -142,6 +140,24 @@ def custom_tune_regression_hyperparameters(model,
     return best_hyperparams, performance_metrics
 
 def sklearn(model, x, y, hyperparam_grid):
+    """Tunes hyperparameters using grid search and k-fold cross validation.
+
+    Parameters
+    ----------
+    model : class
+        Regression model
+    x : pd.DataFrame
+        DataFrame of model features.
+    y : pd.Series
+        Series of model labels.
+    hyperparameter_dict : dict
+        Dictionary of hyperparameter combinations to be tested.
+
+    Returns
+    -------
+    tuple
+        Dictionary of best parameters and scalar value of best train r^2 score.
+    """
     np.random.seed(42)
     model_cv = GridSearchCV(model, hyperparam_grid, cv=5)
     model_cv.fit(x, y)
@@ -186,9 +202,9 @@ if __name__ == "__main__":
         "eta0" : [0.001, 0.01, 0.1]
     }
 
-    best_hyperparams, performance_metrics = sklearn(SGDRegressor(),
-                                                                X_train,
-                                                                y_train,
+    best_hyperparams, performance_metrics = custom_tune_regression_hyperparameters(SGDRegressor(),
+                                                                feature_df_scaled,
+                                                                label_series,
                                                                 hyperparam_grid)
     print(best_hyperparams)
 
