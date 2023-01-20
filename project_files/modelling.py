@@ -5,8 +5,68 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+import itertools
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import typing
+# %%
+def split_data(feature_dataframe, label_series, test_size=0.3):
+    """Splits feature dataframe into train, test, and validation sets
+    in a proportion of test_size.
+
+    Parameters
+    ----------
+    feature_dataframe : pd.DataFrame
+        DataFrame of model features.
+    label_series : pd.Series
+        Series of model labels.
+    test_size : float, optional
+        proportion of data to split into test set and validation set, by default 0.3
+
+    Returns
+    -------
+    tuple
+        tuple of arrays of train, test, and validation data.
+    """
+    X_train, X_test, y_train, y_test = train_test_split(feature_dataframe, 
+                                                    label_series, 
+                                                    test_size=test_size
+                                                    )
+    X_test, X_validation, y_test, y_validation = train_test_split(X_test,
+                                                            y_test,
+                                                            test_size=test_size
+                                                            )                                                    
+    return X_train, y_train, X_test, y_test, X_validation, y_validation
+
+
+def grid_search(hyperparameters: typing.Dict[str, typing.Iterable]):
+    """Generator which sequentially yields dictionaries accounting for all 
+    hyperparameter combinations in the given grid. 
+
+    Parameters
+    ----------
+    hyperparameters : typing.Dict[str, typing.Iterable]
+        Dictionary of hyperparameters. Key is hyperparameter name, value is 
+        an iterable of values to be tested.
+
+    Yields
+    ------
+    dict
+        dictionary of hyperparameter combinations to be tested.
+    """
+    keys, values = zip(*hyperparameters.items())
+    yield from (dict(zip(keys, v)) for v in itertools.product(*values))
+
+def custom_tune_regression_model_hyperparameters(model, 
+                                                feature_dataframe: pd.DataFrame,
+                                                hyperparameter_dict: dict):
+    # split data into train, test, and validation sets
+
+    # set initial values for best hyperparameter combination and best loss                                                
+    best_hyperparams, best_loss = None, np.inf
+    for hyperparams in grid_search(hyperparameter_dict):
+        model.fit()
 # %%
 if __name__ == "__main__":
     # load in data
@@ -20,16 +80,11 @@ if __name__ == "__main__":
     )
     feature_df = feature_df.drop("ID", axis=1)
 
-
-    X_train, X_test, y_train, y_test = train_test_split(feature_df, 
-                                                    label_series, 
-                                                    test_size=0.3
-                                                    )
-
-    X_test, X_validation, y_test, y_validation = train_test_split(X_test,
-                                                                y_test,
-                                                                test_size=0.3
-                                                                )
+    X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(
+                                                                        feature_df,
+                                                                        label_series,
+                                                                        test_size=0.3
+    )
 
     model = make_pipeline(StandardScaler(), SGDRegressor())
     model.fit(X_train, y_train)
