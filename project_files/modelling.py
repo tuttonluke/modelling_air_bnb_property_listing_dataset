@@ -1,6 +1,7 @@
 # %%
 from read_tabular_data import TabularData
 from sklearn import metrics
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import SGDRegressor
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import typing
+import warnings
 # %%
 def split_data(feature_dataframe, label_series, test_size=0.3):
     """Splits feature dataframe into train, test, and validation sets
@@ -58,7 +60,6 @@ def normalise_data(data: pd.DataFrame) -> np.array:
     data_scaled = scaler.fit_transform(data.to_numpy())
 
     return  data_scaled
-
 
 def grid_search(hyperparameters: typing.Dict[str, typing.Iterable]):
     """Generator which sequentially yields dictionaries accounting for all 
@@ -128,7 +129,6 @@ def custom_tune_regression_hyperparameters(model,
         if validation_rmse < best_loss:
             best_loss = validation_rmse
             best_hyperparams = hyperparams
-            print(best_loss, best_hyperparams)
             # fill preformance_metrics disctionary with metrics from best hyperparams
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
@@ -141,12 +141,28 @@ def custom_tune_regression_hyperparameters(model,
 
     return best_hyperparams, performance_metrics
 
-def tune_regression_hyperparameters():
-    pass
+def sklearn(model, x, y, hyperparam_grid):
+    np.random.seed(42)
+    model_cv = GridSearchCV(model, hyperparam_grid, cv=5)
+    model_cv.fit(x, y)
+    best_params = model_cv.best_params_
+    best_score = model_cv.best_score_
+
+    return best_params, best_score
+
+def plot_predictions(y_true, y_predicted, n_points=50):
+    plt.figure()
+    plt.scatter(np.arange(n_points), y_true[:n_points], c="b", label="True Labels", marker="x")
+    plt.scatter(np.arange(n_points), y_predicted[:n_points], c="r", label="Predictions")
+    plt.legend()
+    plt.xlabel("Sample Numbers")
+    plt.ylabel("Values")
+    plt.show()
+    
 # %%
 if __name__ == "__main__":
-    # load in data
-    np.random.seed(20)
+    # load in and normalise data
+    np.random.seed(42)
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
 
@@ -163,47 +179,29 @@ if __name__ == "__main__":
                                                                         test_size=0.3
     )
 
+    # tune model hyperparameters
     hyperparam_grid = {
         "alpha" : [0.00001, 0.0001, 0.001, 0.01],
-        "max_iter" : [500, 1000, 1500, 2000],
+        "max_iter" : [1000, 1500, 2000, 5000, 10000],
         "eta0" : [0.001, 0.01, 0.1]
     }
 
-    best_hyperparams, performance_metrics = custom_tune_regression_hyperparameters(SGDRegressor(),
-                                                                feature_df,
-                                                                label_series,
+    best_hyperparams, performance_metrics = sklearn(SGDRegressor(),
+                                                                X_train,
+                                                                y_train,
                                                                 hyperparam_grid)
     print(best_hyperparams)
-    model = make_pipeline(StandardScaler(), SGDRegressor(**best_hyperparams))
+
+    # initialise and fit model to training data
+    model = SGDRegressor(**best_hyperparams)
     model.fit(X_train, y_train)
     
     y_train_pred = model.predict(X_train)
     y_test_pred = model.predict(X_test)
     y_validation_pred = model.predict(X_validation)
 
-    plt.figure()
-    plt.scatter(np.arange(50), y_validation_pred[:50], c="r", label="Predictions")
-    plt.scatter(np.arange(50), label_series[:50], c="b", label="True Labels", marker="x")
-    plt.legend()
-    plt.xlabel("Sample Numbers")
-    plt.ylabel("Values")
-    plt.show()
+    plot_predictions(label_series, y_validation_pred)
 
-    mse_loss_train = round(metrics.mean_squared_error(y_train, y_train_pred), 2)
-    mse_loss_test = round(metrics.mean_squared_error(y_test, y_test_pred), 2)
-    mse_loss_validation = round(metrics.mean_squared_error(y_validation, y_validation_pred), 2)
-
-    print(f"Root mean squared error for training set: {round(mse_loss_train**0.5, 2)}")
-    print(f"Root mean squared error for test set: {round(mse_loss_test**0.5, 2)}")
-    print(f"Root mean squared error for validation set: {round(mse_loss_validation**0.5, 2)}")
-
-    r_squared_train = round(metrics.r2_score(y_train, y_train_pred), 2)
-    r_squared_test = round(metrics.r2_score(y_test, y_test_pred), 2)
-    r_squared_validation = round(metrics.r2_score(y_validation, y_validation_pred), 2)
-
-    print(f"R^2 for training set: {r_squared_train}")
-    print(f"R^2 for test set: {r_squared_test}")
-    print(f"R^2 for validation set: {r_squared_validation}")
-
+    # evaluate statistics
     print(performance_metrics)
 # %%
