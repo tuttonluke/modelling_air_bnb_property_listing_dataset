@@ -53,7 +53,7 @@ def grid_search(hyperparameters: typing.Dict[str, typing.Iterable]):
     Yields
     ------
     dict
-        dictionary of hyperparameter combinations to be tested.
+        Dictionary of hyperparameter combinations to be tested.
     """
     keys, values = zip(*hyperparameters.items())
     yield from (dict(zip(keys, v)) for v in itertools.product(*values))
@@ -62,6 +62,24 @@ def tune_regression_hyperparameters(model,
                                     feature_dataframe: pd.DataFrame,
                                     label_series: pd.Series,
                                     hyperparameter_dict: dict):
+    """Tunes hyperparameters given in hyperparameter_dict on given model and data.
+
+    Parameters
+    ----------
+    model : class
+        Regression model
+    feature_dataframe : pd.DataFrame
+        DataFrame of model features.
+    label_series : pd.Series
+        Series of model labels.
+    hyperparameter_dict : dict
+        Dictionary of hyperparameter combinations to be tested.
+
+    Returns
+    -------
+    tuple
+        Tuple comtaining dictionary of best hyperparameter combination with accompanying statistics.
+    """
     # split data into train, test, and validation sets
     X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(
                                                                     feature_dataframe,
