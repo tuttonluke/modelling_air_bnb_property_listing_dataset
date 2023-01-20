@@ -2,9 +2,9 @@
 from read_tabular_data import TabularData
 from sklearn import metrics
 from sklearn.linear_model import SGDRegressor
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,6 +40,25 @@ def split_data(feature_dataframe, label_series, test_size=0.3):
                                                             )                                                    
     return X_train, y_train, X_test, y_test, X_validation, y_validation
 
+def normalise_data(data: pd.DataFrame) -> np.array:
+    """
+    Normalises input data (DataFrame) with Min-Max scaling.
+
+    Parameters
+    ----------
+    data : pd.Data
+        Features data.
+
+    Returns
+    -------
+    np.array
+        Scaled features data in numpy array format.
+    """
+    scaler = MinMaxScaler()
+    data_scaled = scaler.fit_transform(data.to_numpy())
+
+    return  data_scaled
+
 
 def grid_search(hyperparameters: typing.Dict[str, typing.Iterable]):
     """Generator which sequentially yields dictionaries accounting for all 
@@ -59,7 +78,7 @@ def grid_search(hyperparameters: typing.Dict[str, typing.Iterable]):
     keys, values = zip(*hyperparameters.items())
     yield from (dict(zip(keys, v)) for v in itertools.product(*values))
 
-def tune_regression_hyperparameters(model, 
+def custom_tune_regression_hyperparameters(model, 
                                     feature_dataframe: pd.DataFrame,
                                     label_series: pd.Series,
                                     hyperparameter_dict: dict):
@@ -109,6 +128,7 @@ def tune_regression_hyperparameters(model,
         if validation_rmse < best_loss:
             best_loss = validation_rmse
             best_hyperparams = hyperparams
+            print(best_loss, best_hyperparams)
             # fill preformance_metrics disctionary with metrics from best hyperparams
             y_train_pred = model.predict(X_train)
             y_test_pred = model.predict(X_test)
@@ -120,6 +140,9 @@ def tune_regression_hyperparameters(model,
             performance_metrics["validation R^2 score"] = round(metrics.r2_score(y_validation, y_validation_pred), 2)
 
     return best_hyperparams, performance_metrics
+
+def tune_regression_hyperparameters():
+    pass
 # %%
 if __name__ == "__main__":
     # load in data
@@ -132,9 +155,10 @@ if __name__ == "__main__":
         label="Price_Night"
     )
     feature_df = feature_df.drop("ID", axis=1)
+    feature_df_scaled = normalise_data(feature_df)
 
     X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(
-                                                                        feature_df,
+                                                                        feature_df_scaled,
                                                                         label_series,
                                                                         test_size=0.3
     )
@@ -145,20 +169,17 @@ if __name__ == "__main__":
         "eta0" : [0.001, 0.01, 0.1]
     }
 
-    best_hyperparams, performance_metrics = tune_regression_hyperparameters(SGDRegressor(),
+    best_hyperparams, performance_metrics = custom_tune_regression_hyperparameters(SGDRegressor(),
                                                                 feature_df,
                                                                 label_series,
                                                                 hyperparam_grid)
-    model = make_pipeline(StandardScaler(), SGDRegressor())
+    print(best_hyperparams)
+    model = make_pipeline(StandardScaler(), SGDRegressor(**best_hyperparams))
     model.fit(X_train, y_train)
     
     y_train_pred = model.predict(X_train)
     y_test_pred = model.predict(X_test)
     y_validation_pred = model.predict(X_validation)
-
-    mse_loss_train = round(metrics.mean_squared_error(y_train, y_train_pred), 2)
-    mse_loss_test = round(metrics.mean_squared_error(y_test, y_test_pred), 2)
-    mse_loss_validation = round(metrics.mean_squared_error(y_validation, y_validation_pred), 2)
 
     plt.figure()
     plt.scatter(np.arange(50), y_validation_pred[:50], c="r", label="Predictions")
@@ -167,6 +188,10 @@ if __name__ == "__main__":
     plt.xlabel("Sample Numbers")
     plt.ylabel("Values")
     plt.show()
+
+    mse_loss_train = round(metrics.mean_squared_error(y_train, y_train_pred), 2)
+    mse_loss_test = round(metrics.mean_squared_error(y_test, y_test_pred), 2)
+    mse_loss_validation = round(metrics.mean_squared_error(y_validation, y_validation_pred), 2)
 
     print(f"Root mean squared error for training set: {round(mse_loss_train**0.5, 2)}")
     print(f"Root mean squared error for test set: {round(mse_loss_test**0.5, 2)}")
