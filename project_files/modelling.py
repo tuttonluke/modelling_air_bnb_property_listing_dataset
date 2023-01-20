@@ -1,12 +1,12 @@
 # %%
 from read_tabular_data import TabularData
+from sklearn import metrics
 from sklearn.linear_model import SGDRegressor
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
 # %%
 if __name__ == "__main__":
     # load in data
@@ -38,9 +38,9 @@ if __name__ == "__main__":
     y_validation_pred = model.predict(X_validation)
     y_test_pred = model.predict(X_test)
 
-    mse_loss_train = mean_squared_error(y_train, y_train_pred)
-    mse_loss_test = mean_squared_error(y_test, y_test_pred)
-    mse_loss_validation = mean_squared_error(y_validation, y_validation_pred)
+    mse_loss_train = metrics.mean_squared_error(y_train, y_train_pred)
+    mse_loss_test = metrics.mean_squared_error(y_test, y_test_pred)
+    mse_loss_validation = metrics.mean_squared_error(y_validation, y_validation_pred)
     print("Mean Squared Error Loss on Training data: ", mse_loss_train)
     print("Mean Squared Error Loss on Test data: ", mse_loss_test)
     print("Mean Squared Error Loss on Validation data: ", mse_loss_validation)
@@ -51,6 +51,14 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel("Sample Numbers")
     plt.ylabel("Values")
-    plt.show() 
+    plt.show()
+
+    print(f"Root mean squared error for training set: {mse_loss_train**0.5}")
+    print(f"Root mean squared error for test set: {mse_loss_test**0.5}")
+
+    r_squared_train = metrics.r2_score(y_train, y_train_pred)
+    r_squared_test = metrics.r2_score(y_test, y_test_pred)
+    print(f"R^2 for training set: {r_squared_train}")
+    print(f"R^2 for test set: {r_squared_test}")
 
 # %%
