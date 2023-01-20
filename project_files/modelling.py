@@ -29,6 +29,7 @@ def split_data(feature_dataframe, label_series, test_size=0.3):
     tuple
         tuple of arrays of train, test, and validation data.
     """
+    np.random.seed(20)
     X_train, X_test, y_train, y_test = train_test_split(feature_dataframe, 
                                                     label_series, 
                                                     test_size=test_size
@@ -89,6 +90,12 @@ def tune_regression_hyperparameters(model,
 
     # set initial values for best hyperparameter combination and best loss                                                
     best_hyperparams, best_loss = None, np.inf
+    performance_metrics = {"train_rmse" : None,
+                            "test_rmse" : None,
+                            "validation_rmse" : None,
+                            "train R^2 score" : None,
+                            "test R^2 score" : None,
+                            "validation R^2 score" : None}
     # loop over hyperparameter combinations to ascertain best combination
     for hyperparams in grid_search(hyperparameter_dict):
         # scale data and initiate model with specific hyperparameter combination
@@ -102,12 +109,21 @@ def tune_regression_hyperparameters(model,
         if validation_rmse < best_loss:
             best_loss = validation_rmse
             best_hyperparams = hyperparams
+            # fill preformance_metrics disctionary with metrics from best hyperparams
+            y_train_pred = model.predict(X_train)
+            y_test_pred = model.predict(X_test)
+            performance_metrics["train_rmse"] = round(metrics.mean_squared_error(y_train, y_train_pred)**0.5, 2)
+            performance_metrics["test_rmse"] = round(metrics.mean_squared_error(y_test, y_test_pred)**0.5, 2)
+            performance_metrics["validation_rmse"] = round(validation_rmse, 2)
+            performance_metrics["train R^2 score"] = round(metrics.r2_score(y_train, y_train_pred), 2)
+            performance_metrics["test R^2 score"] = round(metrics.r2_score(y_test, y_test_pred), 2)
+            performance_metrics["validation R^2 score"] = round(metrics.r2_score(y_validation, y_validation_pred), 2)
 
-    return best_hyperparams, best_loss
+    return best_hyperparams, performance_metrics
 # %%
 if __name__ == "__main__":
     # load in data
-    np.random.seed(42)
+    np.random.seed(20)
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
 
@@ -129,24 +145,20 @@ if __name__ == "__main__":
         "eta0" : [0.001, 0.01, 0.1]
     }
 
-    best_hyperparams, best_loss = tune_regression_hyperparameters(SGDRegressor(),
+    best_hyperparams, performance_metrics = tune_regression_hyperparameters(SGDRegressor(),
                                                                 feature_df,
                                                                 label_series,
                                                                 hyperparam_grid)
-
-    model = make_pipeline(StandardScaler(), SGDRegressor(**best_hyperparams))
+    model = make_pipeline(StandardScaler(), SGDRegressor())
     model.fit(X_train, y_train)
     
     y_train_pred = model.predict(X_train)
-    y_validation_pred = model.predict(X_validation)
     y_test_pred = model.predict(X_test)
+    y_validation_pred = model.predict(X_validation)
 
     mse_loss_train = round(metrics.mean_squared_error(y_train, y_train_pred), 2)
     mse_loss_test = round(metrics.mean_squared_error(y_test, y_test_pred), 2)
     mse_loss_validation = round(metrics.mean_squared_error(y_validation, y_validation_pred), 2)
-    print("Mean Squared Error Loss on Training data: ", mse_loss_train)
-    print("Mean Squared Error Loss on Test data: ", mse_loss_test)
-    print("Mean Squared Error Loss on Validation data: ", mse_loss_validation)
 
     plt.figure()
     plt.scatter(np.arange(50), y_validation_pred[:50], c="r", label="Predictions")
@@ -158,10 +170,15 @@ if __name__ == "__main__":
 
     print(f"Root mean squared error for training set: {round(mse_loss_train**0.5, 2)}")
     print(f"Root mean squared error for test set: {round(mse_loss_test**0.5, 2)}")
+    print(f"Root mean squared error for validation set: {round(mse_loss_validation**0.5, 2)}")
 
     r_squared_train = round(metrics.r2_score(y_train, y_train_pred), 2)
     r_squared_test = round(metrics.r2_score(y_test, y_test_pred), 2)
+    r_squared_validation = round(metrics.r2_score(y_validation, y_validation_pred), 2)
+
     print(f"R^2 for training set: {r_squared_train}")
     print(f"R^2 for test set: {r_squared_test}")
+    print(f"R^2 for validation set: {r_squared_validation}")
 
+    print(performance_metrics)
 # %%
