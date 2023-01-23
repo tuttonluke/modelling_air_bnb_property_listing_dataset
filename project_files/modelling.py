@@ -6,6 +6,8 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import itertools
+import joblib
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -174,7 +176,30 @@ def plot_predictions(y_true, y_predicted, n_points=50):
     plt.xlabel("Sample Numbers")
     plt.ylabel("Values")
     plt.show()
-    
+
+def save_model(model, hyperparams: dict, metrics: dict, folder: str):
+    """Saves the model, hyperparamers, and metrics in designated folder.
+
+    Parameters
+    ----------
+    model : Trained model.
+        Model to be saved.
+    hyperparams : dict
+        Dictionary of best hyperparameters.
+    metrics : dict
+        Dictionary of performance metrics.
+    folder : str
+        Filepath of save location.
+    """
+    model_name = str(model)
+    # save model
+    joblib.dump(model, f"{folder}/{model_name}.joblib")
+    # save hyperparameters in json file
+    with open(f"{folder}/{model_name}_hyperparams.json", "w") as file:
+        json.dump(hyperparams, file)
+    # save model metrics in json file
+    with open(f"{folder}/{model_name}_metrics.json", "w") as file:
+        json.dump(metrics, file)
 # %%
 if __name__ == "__main__":
     # load in and normalise data
@@ -220,4 +245,5 @@ if __name__ == "__main__":
 
     # evaluate statistics
     print(performance_metrics)
+    save_model(model, best_hyperparams, performance_metrics, "models/regression")
 # %%
