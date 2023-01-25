@@ -11,6 +11,7 @@ import joblib
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import typing
 import warnings
@@ -21,8 +22,7 @@ def read_in_data():
     Returns
     -------
     tupple
-        Tuple containing DataFrames of features and labels, and arrays of training,
-        testing, and validation sets.
+        Tuple containing DataFrames of features and labels.
     """
     np.random.seed(42)
     tabular_df = TabularData()
@@ -35,13 +35,7 @@ def read_in_data():
     feature_df = feature_df.drop("ID", axis=1)
     feature_df_scaled = normalise_data(feature_df)
 
-    X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(
-                                                                        feature_df_scaled,
-                                                                        label_series,
-                                                                        test_size=0.3
-    )
-
-    return feature_df_scaled, label_series, X_train, y_train, X_test, y_test, X_validation, y_validation
+    return feature_df_scaled, label_series
 
 def split_data(feature_dataframe, label_series, test_size=0.3):
     """Splits feature dataframe into train, test, and validation sets
@@ -237,7 +231,8 @@ if __name__ == "__main__":
     # on this data!
     warnings.simplefilter("ignore", category=ConvergenceWarning)
     # load in and normalise data
-    feature_df_scaled, label_series, X_train, y_train, X_test, y_test, X_validation, y_validation = read_in_data()
+    feature_df_scaled, label_series = read_in_data()
+    X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(feature_df_scaled, label_series)
 
     # tune model hyperparameters
     hyperparam_grid = {
@@ -256,8 +251,6 @@ if __name__ == "__main__":
     model = SGDRegressor(**best_hyperparams)
     model.fit(X_train, y_train)
     
-    y_train_pred = model.predict(X_train)
-    y_test_pred = model.predict(X_test)
     y_validation_pred = model.predict(X_validation)
 
     plot_predictions(label_series, y_validation_pred)
@@ -265,5 +258,6 @@ if __name__ == "__main__":
     # evaluate statistics
     print(f"Best hyperparameters: {best_hyperparams}")
     print(f"Best score: {best_score}")
-    save_model(model, best_hyperparams, best_score, "models/regression")
+    os.mkdir("models/regression/SGD")
+    save_model(model, best_hyperparams, best_score, "models/regression/SGD")
 # %%
