@@ -1,6 +1,7 @@
 # %%
 from read_tabular_data import TabularData
 from sklearn import metrics
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import SGDRegressor
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
@@ -12,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import typing
+import warnings
 # %%
 def split_data(feature_dataframe, label_series, test_size=0.3):
     """Splits feature dataframe into train, test, and validation sets
@@ -141,7 +143,7 @@ def custom_tune_regression_hyperparameters(model,
 
     return best_hyperparams, performance_metrics
 
-def sklearn(model, x, y, hyperparam_grid):
+def sklearn_tune_hyperparameters_and_cv(model, x, y, hyperparam_grid):
     """Tunes hyperparameters using grid search and k-fold cross validation.
 
     Parameters
@@ -161,6 +163,10 @@ def sklearn(model, x, y, hyperparam_grid):
         Dictionary of best parameters and scalar value of best train r^2 score.
     """
     np.random.seed(42)
+    # Surpress Convergence warning for this model - SGD regression will not converge
+    # on this data!
+    warnings.simplefilter("ignore", category=ConvergenceWarning)
+    # perform cross validation and hyperparameter tuning
     model_cv = GridSearchCV(model, hyperparam_grid, cv=5)
     model_cv.fit(x, y)
     best_params = model_cv.best_params_
@@ -227,7 +233,7 @@ if __name__ == "__main__":
         "eta0" : [0.001, 0.01, 0.1]
     }
 
-    best_hyperparams, performance_metrics = custom_tune_regression_hyperparameters(SGDRegressor(),
+    best_hyperparams, performance_metrics = sklearn_tune_hyperparameters_and_cv(SGDRegressor(),
                                                                 feature_df_scaled,
                                                                 label_series,
                                                                 hyperparam_grid)
