@@ -34,6 +34,41 @@ Images relevant to the AirBnB listings were saved on the cloud using Amazon Web 
 
 ## Milestone 2: Creating a Regression Model
 Technologies / Skills:
+ - Regression and Classification Models:
+    - Linear regression
+    - Logistic regression
+    - Decision trees
+    - Random forests with bagging
+    - Adaboost
+    - Gradient boost
+- Associated skills:
+    - Gradient descent 
+    - Validation and testing
+    - Bias vs variance tradeoff
+    - Hyperparameter optimisation 
+    - Cross validation
+    - Regularisation tecniques
+    - Maximum Likelihood estimation
+- Technologies:
+    - scikit-learn
+    - numba
+
+Various regression models were trained in this section on the data prepared in the last in an attempt to accurately predict the nightly cost of a property based on the features in the dataset.
+
+Four main models were tested: stochastic gradient descent, simple decision tree, random forest, and gradient boost. These were implemented using the module scikit-learn as shown in the files [modelling.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/modelling.py) and [find_best_regression_model.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/find_best_regression_model.py).
+
+The accuracy scores of these models are as follows:
+
+| Model          | Accuracy Score     | 
+|----------------|--------------------|
+| SGDRegression  |       0.343        | 
+| Decision Tree  |       0.216        | 
+| Random Forest  |       0.355        | 
+| Gradient Boost |       0.362        |
+
+Clearly these tecniques are insufficient for robust predictions of the target labels.
+
+
 
 
 
