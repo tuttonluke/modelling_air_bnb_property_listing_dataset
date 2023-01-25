@@ -122,9 +122,7 @@ def gradient_boost_test(hyperparam_dict):
 
     # save model
     os.mkdir("models/regression/gradient_boost")
-    # save_model(regressor, best_hyperparams, best_score, "models/regression/gradient_boost")
-    model_name = str(regressor)
-    joblib.dump(regressor, f"models/regression/gradient_boost/{model_name}.joblib")
+    save_model(regressor, best_hyperparams, best_score, "models/regression/gradient_boost")
 
     return best_hyperparams, best_score
 # %%
