@@ -15,6 +15,34 @@ import pandas as pd
 import typing
 import warnings
 # %%
+def read_in_data():
+    """Reads in, cleans, splits, and normalises data for analysis.
+
+    Returns
+    -------
+    tupple
+        Tuple containing DataFrames of features and labels, and arrays of training,
+        testing, and validation sets.
+    """
+    np.random.seed(42)
+    tabular_df = TabularData()
+    numerical_tabular_df = tabular_df.get_numerical_data_df()
+
+    feature_df, label_series = tabular_df.load_airbnb(
+        numerical_tabular_df,
+        label="Price_Night"
+    )
+    feature_df = feature_df.drop("ID", axis=1)
+    feature_df_scaled = normalise_data(feature_df)
+
+    X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(
+                                                                        feature_df_scaled,
+                                                                        label_series,
+                                                                        test_size=0.3
+    )
+
+    return feature_df_scaled, label_series, X_train, y_train, X_test, y_test, X_validation, y_validation
+
 def split_data(feature_dataframe, label_series, test_size=0.3):
     """Splits feature dataframe into train, test, and validation sets
     in a proportion of test_size.
@@ -163,9 +191,6 @@ def sklearn_tune_hyperparameters_and_cv(model, x, y, hyperparam_grid):
         Dictionary of best parameters and scalar value of best train r^2 score.
     """
     np.random.seed(42)
-    # Surpress Convergence warning for this model - SGD regression will not converge
-    # on this data!
-    warnings.simplefilter("ignore", category=ConvergenceWarning)
     # perform cross validation and hyperparameter tuning
     model_cv = GridSearchCV(model, hyperparam_grid, cv=5)
     model_cv.fit(x, y)
@@ -208,23 +233,11 @@ def save_model(model, hyperparams: dict, metrics: dict, folder: str):
         json.dump(metrics, file)
 # %%
 if __name__ == "__main__":
+    # Surpress Convergence warning for this model - SGD regression will not converge
+    # on this data!
+    warnings.simplefilter("ignore", category=ConvergenceWarning)
     # load in and normalise data
-    np.random.seed(42)
-    tabular_df = TabularData()
-    numerical_tabular_df = tabular_df.get_numerical_data_df()
-
-    feature_df, label_series = tabular_df.load_airbnb(
-        numerical_tabular_df,
-        label="Price_Night"
-    )
-    feature_df = feature_df.drop("ID", axis=1)
-    feature_df_scaled = normalise_data(feature_df)
-
-    X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(
-                                                                        feature_df_scaled,
-                                                                        label_series,
-                                                                        test_size=0.3
-    )
+    feature_df_scaled, label_series, X_train, y_train, X_test, y_test, X_validation, y_validation = read_in_data()
 
     # tune model hyperparameters
     hyperparam_grid = {
@@ -233,13 +246,13 @@ if __name__ == "__main__":
         "eta0" : [0.001, 0.01, 0.1]
     }
 
-    best_hyperparams, performance_metrics = sklearn_tune_hyperparameters_and_cv(SGDRegressor(),
+    best_hyperparams, best_score = sklearn_tune_hyperparameters_and_cv(SGDRegressor(),
                                                                 feature_df_scaled,
                                                                 label_series,
                                                                 hyperparam_grid)
-    print(best_hyperparams)
+    
 
-    # initialise and fit model to training data
+    # initialise and fit model to training data using optimal hyperparameters
     model = SGDRegressor(**best_hyperparams)
     model.fit(X_train, y_train)
     
@@ -250,6 +263,7 @@ if __name__ == "__main__":
     plot_predictions(label_series, y_validation_pred)
 
     # evaluate statistics
-    print(performance_metrics)
-    save_model(model, best_hyperparams, performance_metrics, "models/regression")
+    print(f"Best hyperparameters: {best_hyperparams}")
+    print(f"Best score: {best_score}")
+    save_model(model, best_hyperparams, best_score, "models/regression")
 # %%
