@@ -3,6 +3,7 @@ from modelling import read_in_data, split_data
 from modelling import sklearn_tune_hyperparameters_and_cv, plot_predictions, save_model
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.tree import DecisionTreeRegressor
+import joblib
 import os
 # %%
 def decision_tree_test(hyperparam_dict: dict):
@@ -121,7 +122,9 @@ def gradient_boost_test(hyperparam_dict):
 
     # save model
     os.mkdir("models/regression/gradient_boost")
-    save_model(regressor, best_hyperparams, best_score, "models/regression/gradient_boost")
+    # save_model(regressor, best_hyperparams, best_score, "models/regression/gradient_boost")
+    model_name = str(regressor)
+    joblib.dump(regressor, f"models/regression/gradient_boost/{model_name}.joblib")
 
     return best_hyperparams, best_score
 # %%
@@ -143,10 +146,12 @@ if __name__ == "__main__":
 
     # GRADIENT BOOST TEST
     gradient_boost_hyperparams = {
-        "learning_rate" : [0.05, 0.1, 0.15],
+        "learning_rate" : [0.05, 0.1],
         "n_estimators" : [50, 100, 200],
         "max_depth" : [3, 5, 8],
-        "min_samples_split" : [2, 4, 6, 8],
+        "min_samples_split" : [2, 4],
         "max_features" : [2, 3, 4, 5]
     }
     best_gradient_boost_hyperparams, gradient_boost_score = gradient_boost_test(gradient_boost_hyperparams)
+
+
