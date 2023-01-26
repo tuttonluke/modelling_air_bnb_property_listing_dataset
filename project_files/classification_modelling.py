@@ -1,11 +1,11 @@
 # %%
 from read_tabular_data import TabularData
-from regression_modelling import save_model
+from regression_modelling import normalise_data, split_data
+from regression_modelling import plot_predictions, save_model
 from sklearn import metrics
 from sklearn.exceptions import ConvergenceWarning 
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -30,77 +30,9 @@ def read_in_data():
 
     return feature_df_scaled, label_series
 
-def normalise_data(data: pd.DataFrame) -> np.array:
-    """
-    Normalises input data (DataFrame) with Min-Max scaling.
-
-    Parameters
-    ----------
-    data : pd.Data
-        Features data.
-
-    Returns
-    -------
-    np.array
-        Scaled features data in numpy array format.
-    """
-    scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(data.to_numpy())
-
-    return  data_scaled
-
-def split_data(feature_dataframe, label_series, test_size=0.3):
-    """Splits feature dataframe into train, test, and validation sets
-    in a proportion of test_size.
-
-    Parameters
-    ----------
-    feature_dataframe : pd.DataFrame
-        DataFrame of model features.
-    label_series : pd.Series
-        Series of model labels.
-    test_size : float, optional
-        proportion of data to split into test set and validation set, by default 0.3
-
-    Returns
-    -------
-    tuple
-        tuple of arrays of train, test, and validation data.
-    """
-    np.random.seed(42)
-    X_train, X_test, y_train, y_test = train_test_split(feature_dataframe, 
-                                                    label_series, 
-                                                    test_size=test_size
-                                                    )
-    X_test, X_validation, y_test, y_validation = train_test_split(X_test,
-                                                            y_test,
-                                                            test_size=test_size
-                                                            )                                                    
-    return X_train, y_train, X_test, y_test, X_validation, y_validation
-
-def plot_predictions(y_true, y_predicted, n_points=50):
-    plt.figure()
-    plt.scatter(np.arange(n_points), y_true[:n_points], c="b", label="True Labels", marker="x")
-    plt.scatter(np.arange(n_points), y_predicted[:n_points], c="r", label="Predictions")
-    plt.legend()
-    plt.xlabel("Sample Numbers")
-    plt.ylabel("Values")
-    plt.show()
-
 def visualise_confusion_matrix(y_true, y_pred):
     confusion_matrix = metrics.confusion_matrix(y_true, y_pred)
     display = metrics.ConfusionMatrixDisplay(confusion_matrix)
-    display.plot()
-    plt.show()
-
-def plot_roc_curve(y_true, y_score):
-    false_positive_rate, true_positive_rate, thresholds = metrics.roc_curve(y_true, 
-                                                                        y_score)
-    area_under_curve = metrics.auc(false_positive_rate, true_positive_rate)
-    display = metrics.RocCurveDisplay(fpr=false_positive_rate, 
-                                        tpr=true_positive_rate, 
-                                        roc_auc=area_under_curve,
-                                        estimator_name='example estimator')
     display.plot()
     plt.show()
 
@@ -144,7 +76,7 @@ if __name__ == "__main__":
     hyperparam_grid = {
         "max_iter" : [100, 200, 500, 1000, 2000],
     }
-    best_hyperparams, best_score = sklearn_tune_hyperparameters_and_cv(LogisticRegression(random_state=1),
+    best_hyperparams, best_score = sklearn_tune_hyperparameters_and_cv(LogisticRegression(),
                                                         feature_df_scaled,
                                                         label_series,
                                                         hyperparam_grid)
