@@ -33,7 +33,7 @@ def decision_tree_test(hyperparam_dict: dict):
     regressor.fit(X_train, y_train)
     y_validation_pred = regressor.predict(X_validation)
 
-    plot_predictions(label_series, y_validation_pred)
+    plot_predictions(y_validation, y_validation_pred)
 
     # evaluate statistics
     print(f"Best decision tree hyperparameters: {best_hyperparams}")
@@ -73,7 +73,7 @@ def random_forest_test(hyperparam_dict: dict):
     regressor.fit(X_train, y_train)
     y_validation_pred = regressor.predict(X_validation)
 
-    plot_predictions(label_series, y_validation_pred)
+    plot_predictions(y_validation, y_validation_pred)
 
     # evaluate statistics
     print(f"Best random forest hyperparameters: {best_hyperparams}")
@@ -113,7 +113,7 @@ def gradient_boost_test(hyperparam_dict):
     regressor.fit(X_train, y_train)
     y_validation_pred = regressor.predict(X_validation)
 
-    plot_predictions(label_series, y_validation_pred)
+    plot_predictions(y_validation, y_validation_pred)
 
     # evaluate statistics
     print(f"Best gradient boost hyperparameters: {best_hyperparams}")
