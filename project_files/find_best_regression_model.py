@@ -1,6 +1,6 @@
 # %%
-from modelling import read_in_data, split_data
-from modelling import sklearn_tune_hyperparameters_and_cv, plot_predictions, save_model
+from regression_modelling import read_in_data, split_data
+from regression_modelling import sklearn_tune_hyperparameters_and_cv, plot_predictions, save_model
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.tree import DecisionTreeRegressor
 import os
@@ -40,8 +40,8 @@ def decision_tree_test(hyperparam_dict: dict):
     print(f"Best decision tree score: {round(best_score, 3)}")
 
     # save model
-    # os.mkdir("models/regression/decision_trees")
-    # save_model(regressor, best_hyperparams, best_score, "models/regression/decision_trees")
+    os.mkdir("models/regression/decision_trees")
+    save_model(regressor, best_hyperparams, best_score, "models/regression/decision_trees")
 
     return best_hyperparams, best_score
 
@@ -80,8 +80,8 @@ def random_forest_test(hyperparam_dict: dict):
     print(f"Best random forest score: {round(best_score, 3)}")
 
     # save model
-    # os.mkdir("models/regression/random_forests")
-    # save_model(regressor, best_hyperparams, best_score, "models/regression/random_forests")
+    os.mkdir("models/regression/random_forests")
+    save_model(regressor, best_hyperparams, best_score, "models/regression/random_forests")
 
     return best_hyperparams, best_score
 
@@ -120,8 +120,8 @@ def gradient_boost_test(hyperparam_dict):
     print(f"Best gradient boost score: {round(best_score, 3)}")
 
     # save model
-    # os.mkdir("models/regression/gradient_boost")
-    # save_model(regressor, best_hyperparams, best_score, "models/regression/gradient_boost")
+    os.mkdir("models/regression/gradient_boost")
+    save_model(regressor, best_hyperparams, best_score, "models/regression/gradient_boost")
 
     return best_hyperparams, best_score
 
@@ -185,3 +185,4 @@ if __name__ == "__main__":
 
 
 # %%
+# TODO fix the model save for gradient boost
