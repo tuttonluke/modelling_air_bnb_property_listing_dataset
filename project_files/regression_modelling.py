@@ -24,7 +24,6 @@ def read_in_data():
     tupple
         Tuple containing DataFrames of features and labels.
     """
-    np.random.seed(42)
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
 
@@ -55,7 +54,7 @@ def split_data(feature_dataframe, label_series, test_size=0.3):
     tuple
         tuple of arrays of train, test, and validation data.
     """
-    np.random.seed(20)
+    np.random.seed(42)
     X_train, X_test, y_train, y_test = train_test_split(feature_dataframe, 
                                                     label_series, 
                                                     test_size=test_size
