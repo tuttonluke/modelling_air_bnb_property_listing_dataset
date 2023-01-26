@@ -252,7 +252,7 @@ if __name__ == "__main__":
     
     y_validation_pred = model.predict(X_validation)
 
-    plot_predictions(label_series, y_validation_pred)
+    plot_predictions(y_validation, y_validation_pred)
 
     # evaluate statistics
     print(f"Best hyperparameters: {best_hyperparams}")
