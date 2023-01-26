@@ -32,7 +32,7 @@ Images relevant to the AirBnB listings were saved on the cloud using Amazon Web 
 
 (screenshot of rescaled image?)
 
-## Milestone 2: Creating a Regression Model
+## Milestone 2: Regression Models
 Technologies / Skills:
  - Regression and Classification Models:
     - Linear regression
@@ -68,7 +68,8 @@ The accuracy scores of these models are as follows:
 
 Clearly these tecniques are insufficient for robust predictions of the target labels.
 
-
+## Milestone 3: Classification Models
+Technologies / Skills:
 
 
 
