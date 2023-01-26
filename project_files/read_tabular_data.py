@@ -27,7 +27,7 @@ class TabularData:
         return numerical_tabular_df
     
     def load_airbnb(self, df, label="Price_Night"):
-        """_summary_
+        """Splits tabular data into a DataFrame of Features and a Series of labels.
 
         Parameters
         ----------
@@ -44,7 +44,26 @@ class TabularData:
         feature_df = df.drop(label, axis=1)
 
         return feature_df, label_series
-        
+    
+    def get_classification_data(self):
+        """Removes all non-numerical data from clean_tabular_data DataFrame,
+        except the label Category and returns the new DataFrame.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with only numerical data.
+        """
+        classification_tabular_df = self.tabular_df.drop([
+                                                    "ID",
+                                                    "Unnamed: 0",
+                                                    "Title",
+                                                    "Description",
+                                                    "Amenities",
+                                                    "Location",
+                                                    "url"
+                                                    ], axis=1)
+        return classification_tabular_df
 
 #%%
 if __name__ == "__main__":
