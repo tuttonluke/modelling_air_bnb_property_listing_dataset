@@ -79,6 +79,31 @@ def model_test(model: str, hyperparam_dict: dict):
 
     return best_hyperparams, performance_metrics
 
+def find_best_classification_model(model_dict: dict):
+    """Finds the model with the best accuracy score.
+
+    Parameters
+    ----------
+    model_dict : dict
+        Dictionary of models tested: keys are model names and values are lists with 
+        first item a dictionary of hyperparameters and second item a scalar of the
+        accuracy score.
+
+    Returns
+    -------
+    tuple
+        First item is the name of the best model.
+        Second item is the accuracy score of the best model.
+    """
+    best_score = 0
+    best_model = None
+    for key, value in model_dict.items():
+        if value[1]["Validation F1 score"] > best_score:
+            best_score = value[1]["Validation F1 score"]
+            best_model = key
+    print(f"The best model is {best_model} with an F1 score of {round(best_score, 4)}.")
+
+    return best_model, best_score
 # %%
 if __name__ == "__main__":
     
@@ -108,7 +133,7 @@ if __name__ == "__main__":
         best_hyperparams, performance_metrics = model_test(model, hyperparameters)
         model_results_dict[model] = [best_hyperparams, performance_metrics]
 
-    best_model, best_score = find_best_model(model_results_dict)
+    best_model, best_score = find_best_classification_model(model_results_dict)
 
 # TODO file not found?
 # TODO consolidate regression test functions
