@@ -32,7 +32,7 @@ Images relevant to the AirBnB listings were saved on the cloud using Amazon Web 
 
 (screenshot of rescaled image?)
 
-## Milestone 2: Regression Models
+## Milestone 2: Regression and Classification Models
 Technologies / Skills:
  - Regression and Classification Models:
     - Linear regression
@@ -53,6 +53,8 @@ Technologies / Skills:
     - scikit-learn
     - numba
 
+### Regression
+
 Various regression models were trained in this section on the data prepared in the last in an attempt to accurately predict the nightly cost of a property based on the features in the dataset.
 
 Four main models were tested: stochastic gradient descent, simple decision tree, random forest, and gradient boost. These were implemented using the module scikit-learn as shown in the files [modelling.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/modelling.py) and [find_best_regression_model.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/find_best_regression_model.py).
@@ -68,12 +70,19 @@ The accuracy scores of these models are as follows:
 
 Clearly these tecniques are insufficient for robust predictions of the target labels.
 
-## Milestone 3: Classification Models
-Technologies / Skills:
+### Classification
 
+Classification versions of decision tree, random forest, and gradient boost models were trained to predict the property category in an example of multiclass classification.
 
+Overfitting was reduced by optimising hyperparameters such as number of estimators, number of features, and maximum tree depth.
 
+The best model was selected based on the F1 score on predicitons of the validation set, and are as follows:
 
+| Model          | F1 Accuracy Score     | 
+|----------------|-----------------------|
+| Decision Tree  |         0.328         | 
+| Random Forest  |         0.381         | 
+| Gradient Boost |         0.339         |
 
-
+Again, however, these tecniques are insufficient for robust classifications of the target labels.
 
