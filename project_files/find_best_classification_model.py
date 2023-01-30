@@ -1,5 +1,6 @@
 # %%
 from classification_modelling import read_in_data, sklearn_tune_hyperparameters_and_cv, visualise_confusion_matrix
+from find_best_regression_model import find_best_model
 from regression_modelling import split_data, plot_predictions, save_model
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -71,10 +72,10 @@ def model_test(model: str, hyperparam_dict: dict):
     }
     print(f"\n{performance_metrics}")
 
-    # save model
-    folder_path = f"models/classification/{model}"
-    os.mkdir(folder_path)
-    save_model(classifier, best_hyperparams, performance_metrics, folder_path)
+    # # save model
+    # folder_path = f"models/classification/{model}"
+    # os.mkdir(folder_path)
+    # save_model(classifier, best_hyperparams, performance_metrics, folder_path)
 
     return best_hyperparams, performance_metrics
 
@@ -101,12 +102,13 @@ if __name__ == "__main__":
                             }   
     }
     
-
     model_results_dict = {}
 
     for model, hyperparameters in models_and_hyperparams.items():
         best_hyperparams, performance_metrics = model_test(model, hyperparameters)
         model_results_dict[model] = [best_hyperparams, performance_metrics]
+
+    best_model, best_score = find_best_model(model_results_dict)
 
 # TODO file not found?
 # TODO consolidate regression test functions
