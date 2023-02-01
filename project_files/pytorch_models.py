@@ -3,6 +3,7 @@ from read_tabular_data import TabularData
 from regression_modelling import read_in_data
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import random_split
+from torch.utils.tensorboard import SummaryWriter
 import torch
 import torch.nn.functional as F
 # %%
@@ -30,9 +31,14 @@ class LinearRegression(torch.nn.Module):
     def forward(self, features):
         return self.linear_layer(features).reshape(-1) # make prediction
 
-def train(model, data_loader, epochs=10):
+def train(model, data_loader, set: str, epochs=10):
 
+    # initialise optimiser
     optimiser = torch.optim.SGD(model.parameters(), lr=0.001)
+
+    # initialise tensorboard visualiser
+    writer = SummaryWriter()
+    batch_index = 0
 
     for epoch in range(epochs):
         for batch in data_loader:
@@ -46,8 +52,9 @@ def train(model, data_loader, epochs=10):
             # optimisation
             optimiser.step()
             optimiser.zero_grad() # reset gradients
-            
-        
+            # add data to writer for visualisation
+            writer.add_scalar(tag=f"{set} Loss", scalar_value=loss.item(), global_step=batch_index)
+            batch_index += 1
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
@@ -76,9 +83,7 @@ if __name__ == "__main__":
     model = LinearRegression(in_features, out_features)
     
     # # train model
-    train(model, train_loader)
-
-
-
+    train(model, train_loader, "Train")
+    train(model, val_loader, "Validation")
 # %%
 # TODO docstrings
