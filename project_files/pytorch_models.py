@@ -4,6 +4,7 @@ from regression_modelling import read_in_data
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import random_split
 import torch
+import torch.nn.functional as F
 # %%
 class AirbnbNightlyPriceImageDataset(Dataset):
     """Creates a PyTorch dataset  of the AirBnb data that returns a tuple 
@@ -16,12 +17,36 @@ class AirbnbNightlyPriceImageDataset(Dataset):
         self.labels = labels
     
     def __getitem__(self, index):
-        return torch.tensor(self.features[index]), self.labels[index]
+        return torch.tensor(self.features[index], dtype=torch.float32), torch.tensor(self.labels[index], dtype=torch.float32)
     
     def __len__(self):
         return len(self.features)
+
+class LinearRegression(torch.nn.Module):
+    def __init__(self, in_features, out_features) -> None:
+        super().__init__()
+        self.linear_layer = torch.nn.Linear(in_features, out_features)
+    
+    def forward(self, features):
+        return self.linear_layer(features).reshape(-1) # make prediction
+
+def train(model, data_loader, epochs=10):
+    for epoch in range(epochs):
+        for batch in data_loader:
+            features, labels = batch
+            # print(features)
+            prediction = model(features)
+            # print(prediction)
+            # print(labels)
+            loss = F.mse_loss(prediction, labels)
+            loss.backward()
+            print(loss)
+            break
+        #break
 # %%
 if __name__ == "__main__":
+    # seed RNG for reproducability
+    torch.manual_seed(42)
     # import AirBnb dataset, isolate numerical data and split it into features and labels
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
@@ -35,10 +60,20 @@ if __name__ == "__main__":
     test_subset, val_subset = random_split(test_subset, [132, 34])
 
     # create DataLoader to load in data for each set
-    BATCH_SIZE = 10
-    train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
+    BATCH_SIZE = 4
+    train_loader = DataLoader(train_subset, shuffle=False, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_subset, shuffle=True, batch_size=BATCH_SIZE)
     val_loader = DataLoader(val_subset, shuffle=True, batch_size=BATCH_SIZE)
 
+    # initiate model
+    in_features = len(feature_df_scaled[0]) # number of features (11)
+    out_features = 1 # number of labels
+    model = LinearRegression(in_features, out_features)
+    
+    # # train model
+    train(model, train_loader)
+
+
 
 # %%
+# TODO docstrings
