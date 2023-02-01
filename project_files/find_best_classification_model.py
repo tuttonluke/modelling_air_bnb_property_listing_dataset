@@ -1,13 +1,12 @@
 # %%
 from classification_modelling import read_in_data, sklearn_tune_hyperparameters_and_cv, visualise_confusion_matrix
-from find_best_regression_model import find_best_model
 from regression_modelling import split_data, plot_predictions, save_model
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier
 import os
 # %%
-def model_test(model: str, hyperparam_dict: dict):
+def classification_model_test(model: str, hyperparam_dict: dict):
     """Fits model to data and tunes hyperparameters, returning the
     model with the highest score.
 
@@ -26,6 +25,7 @@ def model_test(model: str, hyperparam_dict: dict):
     feature_df_scaled, label_series  = read_in_data()
     X_train, y_train, X_test, y_test, X_validation, y_validation = split_data(feature_df_scaled, label_series)
     
+    # select and initialise model, tune hyperparameters
     if model == "decision_tree":
         best_hyperparams, best_score = sklearn_tune_hyperparameters_and_cv(DecisionTreeClassifier(random_state=1),
                                                                 feature_df_scaled,
@@ -72,10 +72,10 @@ def model_test(model: str, hyperparam_dict: dict):
     }
     print(f"\n{performance_metrics}")
 
-    # # save model
-    # folder_path = f"models/classification/{model}"
-    # os.mkdir(folder_path)
-    # save_model(classifier, best_hyperparams, performance_metrics, folder_path)
+    # save model
+    folder_path = f"models/classification/{model}"
+    os.mkdir(folder_path)
+    save_model(classifier, best_hyperparams, performance_metrics, folder_path)
 
     return best_hyperparams, performance_metrics
 
@@ -97,43 +97,45 @@ def find_best_classification_model(model_dict: dict):
     """
     best_score = 0
     best_model = None
+    
+    # loop through models_and_hyperparams dictionary to find the best model with
+    # optimal hyperparameters
     for key, value in model_dict.items():
         if value[1]["Validation F1 score"] > best_score:
             best_score = value[1]["Validation F1 score"]
             best_model = key
-    print(f"The best model is {best_model} with an F1 score of {round(best_score, 4)}.")
+    print(f"\nThe best model is {best_model} with a validation F1 score of {round(best_score, 4)}.")
 
     return best_model, best_score
 # %%
 if __name__ == "__main__":
-    
+
     models_and_hyperparams = {
         "decision_tree" : {
                             "max_depth" : [3, 5, 10, None],
                             "min_samples_split" : [2, 4, 6, 8]
                             },
         "random_forest" : {
-                            "n_estimators" : [100, 200, 300],
-                            "max_depth" : [3, 5, 10, None],
-                            "min_samples_split" : [2, 4, 6, 8],
-                            "max_features" : [2, 3, 4, 5]
+                            "n_estimators" : [100, 200],
+                            #"max_depth" : [3, 5, None],
+                            #"min_samples_split" : [2, 4, 6, 8],
+                            #"max_features" : [2, 3, 4]
                             },
         "gradient_boost" : {
                             "learning_rate" : [0.05, 0.1],
-                            "n_estimators" : [50, 100, 200],
-                            "max_depth" : [3, 5, 8],
-                            "min_samples_split" : [2, 4],
-                            "max_features" : [2, 3, 4, 5]
+                            #"n_estimators" : [100, 200],
+                            #"max_depth" : [3, 5],
+                            #"min_samples_split" : [2, 4],
+                            #"max_features" : [2, 3, 4]
                             }   
     }
     
     model_results_dict = {}
-
-    for model, hyperparameters in models_and_hyperparams.items():
-        best_hyperparams, performance_metrics = model_test(model, hyperparameters)
+    # loop through models_and_hyperparams dictionary to find the best model with
+    # optimal hyperparameters
+    for model, hyperparam_dict in models_and_hyperparams.items():
+        best_hyperparams, performance_metrics = classification_model_test(model, hyperparam_dict)
         model_results_dict[model] = [best_hyperparams, performance_metrics]
 
     best_model, best_score = find_best_classification_model(model_results_dict)
 
-# TODO file not found?
-# TODO consolidate regression test functions
