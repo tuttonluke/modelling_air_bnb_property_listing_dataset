@@ -31,18 +31,23 @@ class LinearRegression(torch.nn.Module):
         return self.linear_layer(features).reshape(-1) # make prediction
 
 def train(model, data_loader, epochs=10):
+
+    optimiser = torch.optim.SGD(model.parameters(), lr=0.001)
+
     for epoch in range(epochs):
         for batch in data_loader:
             features, labels = batch
-            # print(features)
             prediction = model(features)
-            # print(prediction)
-            # print(labels)
+            # calculate loss
             loss = F.mse_loss(prediction, labels)
+            # backpropagation (populate gradients)
             loss.backward()
             print(loss)
-            break
-        #break
+            # optimisation
+            optimiser.step()
+            optimiser.zero_grad() # reset gradients
+            
+        
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
