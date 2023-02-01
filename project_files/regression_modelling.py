@@ -7,12 +7,12 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import itertools
-import joblib
 import json
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
+import pickle
 import typing
 import warnings
 # %%
@@ -217,7 +217,8 @@ def save_model(model, hyperparams: dict, metrics: dict, folder: str):
     """
     model_name = str(model)
     # save model
-    joblib.dump(model, f"{folder}/{model_name}.joblib")
+    with open(f"{folder}/{model_name}.pkl", "wb") as file:
+        pickle.dump(model, file)
     # save hyperparameters in json file
     with open(f"{folder}/{model_name}_hyperparams.json", "w") as file:
         json.dump(hyperparams, file)
