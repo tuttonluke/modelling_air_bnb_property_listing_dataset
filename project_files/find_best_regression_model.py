@@ -83,7 +83,9 @@ def find_best_regression_model(model_dict: dict):
         Second item is the accuracy score of the best model.
     """
     best_score = 0
-    best_model = None
+    best_model = None    
+    # loop through models_and_hyperparams dictionary to find the best model with
+    # optimal hyperparameters
     for key, value in model_dict.items():
         if value[1] > best_score:
             best_score = value[1]
@@ -115,6 +117,8 @@ if __name__ == "__main__":
 
     model_results_dict = {}
 
+    # loop through models_and_hyperparams dictionary to find the best model with
+    # optimal hyperparameters
     for model, hyperparam_dict in models_and_hyperparams.items():
         best_hyperparams, performance_metrics = regression_model_test(model, hyperparam_dict)
         model_results_dict[model] = [best_hyperparams, performance_metrics]
