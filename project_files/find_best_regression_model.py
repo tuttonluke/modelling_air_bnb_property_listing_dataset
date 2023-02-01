@@ -84,6 +84,7 @@ def find_best_regression_model(model_dict: dict):
     """
     best_score = 0
     best_model = None    
+    
     # loop through models_and_hyperparams dictionary to find the best model with
     # optimal hyperparameters
     for key, value in model_dict.items():
@@ -95,6 +96,7 @@ def find_best_regression_model(model_dict: dict):
     return best_model, best_score
 # %%
 if __name__ == "__main__":
+
     models_and_hyperparams = {
         "decision_tree" : {
                             "max_depth" : [3, 5, 10, None],
@@ -116,7 +118,6 @@ if __name__ == "__main__":
     }
 
     model_results_dict = {}
-
     # loop through models_and_hyperparams dictionary to find the best model with
     # optimal hyperparameters
     for model, hyperparam_dict in models_and_hyperparams.items():
