@@ -31,6 +31,18 @@ class LinearRegression(torch.nn.Module):
     def forward(self, features):
         return self.linear_layer(features).reshape(-1) # make prediction
 
+class NN(torch.nn.Module):
+    def __init__(self, in_features, out_features) -> None:
+        super().__init__()
+        self.layers = torch.nn.Sequential(
+            torch.nn.Linear(in_features, 8),
+            torch.nn.ReLU(),
+            torch.nn.Linear(8, out_features)
+        )
+    
+    def forward(self, features):
+        return self.layers(features).reshape(-1)
+
 def train(model, data_loader, set: str, epochs=10):
 
     # initialise optimiser
@@ -76,14 +88,22 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_subset, shuffle=False, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_subset, shuffle=True, batch_size=BATCH_SIZE)
     val_loader = DataLoader(val_subset, shuffle=True, batch_size=BATCH_SIZE)
-
-    # initiate model
     in_features = len(feature_df_scaled[0]) # number of features (11)
     out_features = 1 # number of labels
-    model = LinearRegression(in_features, out_features)
+
+    # # initiate and train Linear Regression model
+    # lr_model = LinearRegression(in_features, out_features)
     
-    # # train model
-    train(model, train_loader, "Train")
-    train(model, val_loader, "Validation")
+    # train(lr_model, train_loader, "Train")
+    # train(lr_model, val_loader, "Validation")
+
+    # initiate and train neural network model
+    nn_model = NN(in_features, out_features)
+    
+    train(nn_model, train_loader, "Train")
+    train(nn_model, val_loader, "Validation")
+
+
+
 # %%
 # TODO docstrings
