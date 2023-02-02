@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 project_files/processed_images
+project_files/runs
 
 # C extensions
 *.so
