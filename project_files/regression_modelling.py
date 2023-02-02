@@ -216,9 +216,16 @@ def save_model(model, hyperparams: dict, metrics: dict, folder: str):
         Filepath of save location.
     """
     model_name = str(model)
-    # save model
-    with open(f"{folder}/{model_name}.pkl", "wb") as file:
-        pickle.dump(model, file)
+    # check if the model is from PyTorch module
+    if hasattr(model, "state_dict"):
+        # save PyTorch models
+        with open(f"{folder}/{model_name}.pt", "wb") as file:
+            pickle.dump(model, file)
+    else:
+        # save other models
+        with open(f"{folder}/{model_name}.pkl", "wb") as file:
+            pickle.dump(model, file)
+    
     # save hyperparameters in json file
     with open(f"{folder}/{model_name}_hyperparams.json", "w") as file:
         json.dump(hyperparams, file)
