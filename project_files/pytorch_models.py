@@ -6,6 +6,7 @@ from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
 import torch
 import torch.nn.functional as F
+import yaml
 # %%
 class AirbnbNightlyPriceImageDataset(Dataset):
     """Creates a PyTorch dataset  of the AirBnb data that returns a tuple 
@@ -32,18 +33,20 @@ class LinearRegression(torch.nn.Module):
         return self.linear_layer(features).reshape(-1) # make prediction
 
 class NN(torch.nn.Module):
-    def __init__(self, in_features, out_features) -> None:
+    def __init__(self, in_features, out_features, config_dict) -> None:
         super().__init__()
+        self.config_dict = get_nn_config(config_dict)
+        self.hidden_width = self.config_dict["hidden_layer_width"]
         self.layers = torch.nn.Sequential(
-            torch.nn.Linear(in_features, 8),
+            torch.nn.Linear(in_features, self.hidden_width),
             torch.nn.ReLU(),
-            torch.nn.Linear(8, out_features)
+            torch.nn.Linear(self.hidden_width, out_features)
         )
     
     def forward(self, features):
         return self.layers(features).reshape(-1)
 
-def train(model, data_loader, set: str, epochs=10):
+def train(model, data_loader, tag: str, epochs=10):
 
     # initialise optimiser
     optimiser = torch.optim.SGD(model.parameters(), lr=0.001)
@@ -65,8 +68,48 @@ def train(model, data_loader, set: str, epochs=10):
             optimiser.step()
             optimiser.zero_grad() # reset gradients
             # add data to writer for visualisation
-            writer.add_scalar(tag=f"{set} Loss", scalar_value=loss.item(), global_step=batch_index)
+            writer.add_scalar(tag=f"{tag} Loss", scalar_value=loss.item(), global_step=batch_index)
             batch_index += 1
+
+def get_nn_config(file_path: str) -> dict:
+    with open(file_path, "r") as file:
+        try:
+            config_dict = yaml.safe_load(file)
+            print(config_dict)
+        except yaml.YAMLError as e:
+            print(e)
+    return config_dict
+    
+def train_with_config(model, data_loader, tag: str, config_file: str):
+    # get config as dictionary
+    config_dict = get_nn_config(config_file)
+
+    # get optimiser
+    if config_dict["optimiser"] == "SGD":
+        optimiser = torch.optim.SGD(model.parameters(), lr=config_dict["learning_rate"])
+    else:
+        print("Invalid optimiser.")
+    # initialise tensorboard visualiser
+    writer = SummaryWriter()
+    batch_index = 0
+
+    # train the model
+    for epoch in range(config_dict["epochs"]):
+        for batch in data_loader:
+            features, labels = batch
+            prediction = model(features)
+            # calculate loss
+            loss = F.mse_loss(prediction, labels)
+            # backpropagation
+            loss.backward()
+            print(loss)
+            # optimisation
+            optimiser.step()
+            optimiser.zero_grad() # reset gradients
+            # add data to writer for visualisation
+            writer.add_scalar(tag=f"{tag} Loss", scalar_value=loss.item(), global_step=batch_index)
+            batch_index += 1
+    
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
@@ -97,13 +140,17 @@ if __name__ == "__main__":
     # train(lr_model, train_loader, "Train")
     # train(lr_model, val_loader, "Validation")
 
-    # initiate and train neural network model
-    nn_model = NN(in_features, out_features)
+    # # initiate and train neural network model
+    # nn_model = NN(in_features, out_features, "nn_config.yaml")
     
-    train(nn_model, train_loader, "Train")
-    train(nn_model, val_loader, "Validation")
+    # train(nn_model, train_loader, "Train")
+    # train(nn_model, val_loader, "Validation")
+
+    nn_model = NN(in_features, out_features, "nn_config.yaml")
+    train_with_config(nn_model, train_loader, "Train", "nn_config.yaml")
 
 
 
 # %%
 # TODO docstrings
+
