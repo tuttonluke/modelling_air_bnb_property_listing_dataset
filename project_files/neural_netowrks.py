@@ -79,4 +79,31 @@ def get_nn_config(file_path: str) -> dict:
     return config_dict
 # %%
 if __name__ == "__main__":
-    pass
+    # seed RNG for reproducability
+    torch.manual_seed(42)
+
+    # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
+    tabular_df = TabularData()
+    numerical_tabular_df = tabular_df.get_numerical_data_df()
+    feature_df_normalised, label_series = read_in_data()
+
+    # create torch dataset
+    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
+
+    # split data into train, test, and validation sets
+    train_subset, test_subset = random_split(dataset, [663, 166])
+    test_subset, val_subset = random_split(test_subset, [132, 34])
+
+    # create DataLoaders for each set
+    BATCH_SIZE = 4
+    train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
+    test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
+    val_loader = DataLoader(val_subset, batch_size=BATCH_SIZE)
+
+    # initiate model and training
+    in_features = len(feature_df_normalised[0])
+    out_features = 1
+    config_path = "nn_config.yaml"
+
+    nn_model = Network(in_features, out_features, config_path)
+    
