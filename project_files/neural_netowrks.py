@@ -26,5 +26,32 @@ class AirBnBNightlyPriceImageDataset(Dataset):
     def __len__(self):
         return len(self.features)
 
+class Network(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+
+
 
         
+# %%
+def get_nn_config(file_path: str) -> dict:
+    """Reads a YAML file containing neural netweork 
+    configuration parameters and returns them in a dictionary.
+
+    Parameters
+    ----------
+    file_path : str
+        File path of YAML file.
+
+    Returns
+    -------
+    dict
+        Dictionary of configuration parameters.
+    """
+    with open(file_path, "r") as file:
+        try:
+            config_dict = yaml.safe_load(file)
+            print(config_dict)
+        except yaml.YAMLError as error:
+            print(error)
+    return config_dict
