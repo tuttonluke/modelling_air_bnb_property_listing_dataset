@@ -1,6 +1,7 @@
 # %%
 from read_tabular_data import TabularData
 from regression_modelling import read_in_data
+from sklearn.metrics import r2_score
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
@@ -131,6 +132,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_subset, shuffle=False, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_subset, shuffle=True, batch_size=BATCH_SIZE)
     val_loader = DataLoader(val_subset, shuffle=True, batch_size=BATCH_SIZE)
+
     in_features = len(feature_df_scaled[0]) # number of features (11)
     out_features = 1 # number of labels
 
@@ -146,11 +148,14 @@ if __name__ == "__main__":
     # train(nn_model, train_loader, "Train")
     # train(nn_model, val_loader, "Validation")
 
-    nn_model = NN(in_features, out_features, "nn_config.yaml")
-    train_with_config(nn_model, train_loader, "Train", "nn_config.yaml")
-
-
-
+    config_path = "nn_config.yaml"
+    nn_model = NN(in_features, out_features, config_path)
+    train_with_config(nn_model, train_loader, "Train", config_path) # training set  
 # %%
-# TODO docstrings
+
+    
+
+
+
+
 
