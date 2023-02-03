@@ -27,11 +27,33 @@ class AirBnBNightlyPriceImageDataset(Dataset):
         return len(self.features)
 
 class Network(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, in_features: int, out_features: int, config_file: str) -> None:
+        """Initialiser for neural network class.
+
+        Parameters
+        ----------
+        in_features : int
+            Number of features.
+        out_features : int
+            Number of labels.
+        config_file : str
+            YAML file containing network parameters.
+        """
         super().__init__()
+        self.config_dict = get_nn_config(config_file)
+        self.hidden_width = self.config_dict["hidden_layer_width"]
+        self.netowrk_depth = self.config_dict["network_depth"]
+        # model architecture
+        self.layers = nn.Sequential(
+            nn.Linear(in_features, self.hidden_width),
+            nn.ReLU(),
+            nn.Linear(self.hidden_width, self.hidden_width),
+            nn.ReLU(),
+            nn.Linear(self.hidden_width, out_features)
+        )
 
-
-
+    def forward(self, features):
+        return self.layers(features).reshape(-1)
         
 # %%
 def get_nn_config(file_path: str) -> dict:
@@ -55,3 +77,6 @@ def get_nn_config(file_path: str) -> dict:
         except yaml.YAMLError as error:
             print(error)
     return config_dict
+# %%
+if __name__ == "__main__":
+    pass
