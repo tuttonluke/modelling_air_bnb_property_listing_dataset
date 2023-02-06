@@ -71,7 +71,6 @@ class Network(nn.Module):
         return self.layers(features).reshape(-1)
         
 # %%
-
 def get_nn_config(file_path: str) -> dict:
     """Reads a YAML file containing neural netweork 
     configuration parameters and returns them in a dictionary.
@@ -310,9 +309,16 @@ def generate_nn_configs(n_configs: int) -> list:
             "network_depth" : None,
             "epochs" : epochs
         }
-        print(f"{config_dict}\n")
+        # print(f"{config_dict}\n")
         dict_list.append(config_dict)
 
     return dict_list
+
+def save_configs_as_yaml(config_list: list):
+    for idx, config in enumerate(config_list):
+        with open(f"network_configs/{idx}.yaml", "w") as file:
+            yaml.dump(config, file)
 # %%
-my_dict = generate_nn_configs(16)
+my_dict = generate_nn_configs(2)
+
+save_configs_as_yaml(my_dict)
