@@ -315,6 +315,14 @@ def generate_nn_configs(n_configs: int) -> list:
     return dict_list
 
 def save_configs_as_yaml(config_list: list):
+    """Takes a list of configuration dictionaries and saves each item
+    individually as a YAML file.
+
+    Parameters
+    ----------
+    config_list : list
+        List of configuration dictionaries.
+    """
     for idx, config in enumerate(config_list):
         with open(f"network_configs/{idx}.yaml", "w") as file:
             yaml.dump(config, file)
