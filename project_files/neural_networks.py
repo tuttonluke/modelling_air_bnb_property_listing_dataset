@@ -154,8 +154,7 @@ def train(model, data_loaders: list, config_file: str):
             train_batch_index += 1
         train_end_time = time.time()
         training_duration = train_end_time - train_start_time
-        
-        
+            
         # set model to evaluation mode        
         model.eval()
         # test loop
@@ -244,6 +243,67 @@ def save_model(model, hyperparams: dict, metrics: dict):
     # save model metrics in json file
     with open(f"{folder_path}/metrics.json", "w") as file:
         json.dump(metrics, file)
+
+def generate_nn_configs(n_configs: int) -> list:
+    """Generates a list of configuration dictionaries.
+
+    Parameters
+    ----------
+    n_configs : int
+        Number of configurations to be created.
+
+    Returns
+    -------
+    list
+        List of configuration dictionaries.
+    """
+    dict_list = []
+    # generate values for applicable hyperparameters
+    for i in range(n_configs):
+        learning_rate = random.choice([1/i for i in [10**j for j in range(1, 5)]])
+        hidden_layer_width = random.choice([i for i in [2**j for j in range(3, 9)]])
+        epochs = random.choice([i for i in range(10, 50)])
+        config_dict = {
+            "optimiser" : "SGD",
+            "learning_rate" : learning_rate,
+            "hidden_layer_width" : hidden_layer_width,
+            "network_depth" : None,
+            "epochs" : epochs
+        }
+        # print(f"{config_dict}\n")
+        dict_list.append(config_dict)
+
+    return dict_list
+
+def save_configs_as_yaml(config_list: list):
+    """Takes a list of configuration dictionaries and saves each item
+    individually as a YAML file.
+
+    Parameters
+    ----------
+    config_list : list
+        List of configuration dictionaries.
+    """
+    for idx, config in enumerate(config_list):
+        with open(f"network_configs/{idx}.yaml", "w") as file:
+            yaml.dump(config, file)
+
+def find_best_nn(in_features, out_features):
+    # seed RNG for reproducability
+    torch.manual_seed(42)
+    # cycle through all nn configurations
+    config_directory = "network_configs"
+    for root, dirs, files in os.walk(config_directory):
+        for name in files:
+            config_path = name
+            nn_model = Network(in_features, out_features, config_path)
+            metrics_dict = train(nn_model, loader_list, config_path)
+            print(f"Metrics dictionary:\n{metrics_dict}.")
+
+            # save model
+            hyperparams_dict = get_nn_config(name)
+            save_model(nn_model, hyperparams_dict, metrics_dict)
+    
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
@@ -272,61 +332,22 @@ if __name__ == "__main__":
     # initiate and train model
     in_features = len(feature_df_normalised[0])
     out_features = 1
-    config_path = "nn_config.yaml"
+    # config_path = "nn_config.yaml"
 
-    nn_model = Network(in_features, out_features, config_path)
-    metrics_dict = train(nn_model, loader_list, config_path)
-    print(f"Metrics dictionary:\n{metrics_dict}.")
+    # nn_model = Network(in_features, out_features, config_path)
+    # metrics_dict = train(nn_model, loader_list, config_path)
+    # print(f"Metrics dictionary:\n{metrics_dict}.")
 
-    # save model
-    hyperparams_dict = get_nn_config("nn_config.yaml")
-    save_model(nn_model, hyperparams_dict, metrics_dict)
+    # # save model
+    # hyperparams_dict = get_nn_config("nn_config.yaml")
+    # save_model(nn_model, hyperparams_dict, metrics_dict)
+
+    my_dict = generate_nn_configs(n_configs=6)
+    save_configs_as_yaml(my_dict)
+
+    find_best_nn(in_features, out_features)
 
 # %%
-def generate_nn_configs(n_configs: int) -> list:
-    """Generates a list of configuration dictionaries.
-
-    Parameters
-    ----------
-    n_configs : int
-        Number of configurations to be created.
-
-    Returns
-    -------
-    list
-        List of configuration dictionaries.
-    """
-    dict_list = []
-    # generate values for applicable hyperparameters
-    for i in range(n_configs):
-        learning_rate = random.choice([1/i for i in [10**j for j in range(1, 5)]])
-        hidden_layer_width = random.choice([i for i in [2**j for j in range(1, 5)]])
-        epochs = random.choice([i for i in range(10, 50)])
-        config_dict = {
-            "optimiser" : "SGD",
-            "learning_rate" : learning_rate,
-            "hidden_layer_width" : hidden_layer_width,
-            "network_depth" : None,
-            "epochs" : epochs
-        }
-        # print(f"{config_dict}\n")
-        dict_list.append(config_dict)
-
-    return dict_list
-
-def save_configs_as_yaml(config_list: list):
-    """Takes a list of configuration dictionaries and saves each item
-    individually as a YAML file.
-
-    Parameters
-    ----------
-    config_list : list
-        List of configuration dictionaries.
-    """
-    for idx, config in enumerate(config_list):
-        with open(f"network_configs/{idx}.yaml", "w") as file:
-            yaml.dump(config, file)
-# %%
-my_dict = generate_nn_configs(2)
-
-save_configs_as_yaml(my_dict)
+model_directory = "neural_networks/regression"
+for root, dirs, files in os.walk(model_directory):
+    print(dirs)
