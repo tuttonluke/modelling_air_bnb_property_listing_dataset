@@ -5,6 +5,10 @@ from sklearn.metrics import r2_score
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
+import datetime
+import json
+import os
+import pickle
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -244,8 +248,25 @@ if __name__ == "__main__":
     nn_model = Network(in_features, out_features, config_path)
     metrics_dict = train(nn_model, loader_list, config_path)
     print(f"Metrics dictionary:\n{metrics_dict}.")
-# %%
-array = np.zeros(5)
 
-array[0] = 1
-print(array)
+    def save_model(model, hyperparams: dict, metrics: dict):
+        current_time = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
+        folder_path = f"neural_networks/regression/{current_time}"
+        os.mkdir(folder_path)       
+        
+        with open(f"{folder_path}/model.pt", "wb") as file:
+            pickle.dump(model, file)
+        
+        # save hyperparameters in json file
+        with open(f"{folder_path}/hyperparams.json", "w") as file:
+            json.dump(hyperparams, file)
+        
+        # save model metrics in json file
+        with open(f"{folder_path}/metrics.json", "w") as file:
+            json.dump(metrics, file)
+
+    # save model
+    hyperparams_dict = get_nn_config("nn_config.yaml")
+    save_model(nn_model, hyperparams_dict, metrics_dict)
+
+# %%
