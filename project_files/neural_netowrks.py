@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import time
 from tqdm import tqdm
 import yaml
 # %%
@@ -86,7 +87,7 @@ def get_nn_config(file_path: str) -> dict:
             print(error)
     return config_dict
 
-def train(model, data_loaders: list, tag: str, config_file: str):
+def train(model, data_loaders: list, config_file: str):
     """ Trains model and prints accuracy statistics for training,
     testing, and validation sets.
 
@@ -96,8 +97,6 @@ def train(model, data_loaders: list, tag: str, config_file: str):
         Model initialised using Network class.
     data_loader : list
         List of train, test, and validation set DataLoaders.
-    tag : str
-        Tag for tensorboard visualisation.
     config_file : str
         File path of YAML file containing network parameters.
     """
@@ -113,15 +112,18 @@ def train(model, data_loaders: list, tag: str, config_file: str):
     
     # initialise tensorboard visualiser and metric variables
     writer = SummaryWriter()
-    batch_index = 0
+    train_batch_index = 0
+    test_batch_index = 0
+    val_batch_index = 0
     min_val_loss = np.inf
     min_val_epoch = 0
 
-    for epoch in tqdm(range(config_dict["epochs"])):
+    for epoch in range(config_dict["epochs"]):
         # training loop
         model.train()
         train_loss = 0.0
-        for features, labels in loader_list[0]: # train_loader
+        train_start_time = time.time()
+        for features, labels in data_loaders[0]: # train_loader
             # check if GPU is available
             if torch.cuda.is_available():
                 features, labels = features.cuda(), labels.cuda()
@@ -135,16 +137,17 @@ def train(model, data_loaders: list, tag: str, config_file: str):
             optimiser.step()
             optimiser.zero_grad() # clear gradients
             # add data to writer for tensorboard visualisation
-            if tag == "Train":
-                writer.add_scalar(tag=f"{tag} Loss", scalar_value=loss.item(), global_step=batch_index)
-                batch_index += 1
             train_loss += loss.item()
+            writer.add_scalar(tag=f"Train Loss", scalar_value=loss.item(), global_step=train_batch_index)
+            train_batch_index += 1
+        train_end_time = time.time()
+        training_duration = train_end_time - train_start_time
+        # set model to evaluation mode        
+        model.eval()
         
         # test loop
         test_loss = 0.0
-        batch_index = 0
-        model.eval()
-        for features, labels in loader_list[1]: # test_loader
+        for features, labels in data_loaders[1]: # test_loader
             # check if GPU is available
             if torch.cuda.is_available():
                 features, labels = features.cuda(), labels.cuda()
@@ -154,14 +157,12 @@ def train(model, data_loaders: list, tag: str, config_file: str):
             loss = F.mse_loss(prediction, labels)
             test_loss += loss.item()
             # add data to writer for tensorboard visualisation
-            if tag == "Test":
-                writer.add_scalar(tag=f"{tag} Loss", scalar_value=loss.item(), global_step=batch_index)
-                batch_index += 1
+            writer.add_scalar(tag=f"Test Loss", scalar_value=loss.item(), global_step=test_batch_index)
+            test_batch_index += 1
 
         # validation loop          
         val_loss = 0.0
-        batch_index = 0
-        for features, labels in loader_list[2]: # val_loader
+        for features, labels in data_loaders[2]: # val_loader
             # check if GPU is available
             if torch.cuda.is_available():
                 features, labels = features.cuda(), labels.cuda()
@@ -171,23 +172,30 @@ def train(model, data_loaders: list, tag: str, config_file: str):
             loss = F.mse_loss(prediction, labels)
             val_loss += loss.item()
             # add data to writer for tensorboard visualisation
-            if tag == "Validation":
-                writer.add_scalar(tag=f"{tag} Loss", scalar_value=loss.item(), global_step=batch_index)
-                batch_index += 1
+            writer.add_scalar(tag=f"Validation Loss", scalar_value=loss.item(), global_step=val_batch_index)
+            val_batch_index += 1
 
         # print epoch statistics
         if (epoch + 1) % 1 == 0:
-            print(f"""Epoch: {epoch + 1} Training Loss: {train_loss / len(loader_list[0]):.4f}
+            print(f"""Epoch: {epoch + 1}    Training Loss: {train_loss / len(loader_list[0]):.4f}
             Test Loss: {test_loss / len(loader_list[1]):.4f}
-            Validation Loss: {val_loss / len(loader_list[2]):.4f}""")
+            Validation Loss: {val_loss / len(loader_list[2]):.4f}\n""")
 
         if min_val_loss > val_loss:
             min_val_loss = val_loss
             min_val_epoch = epoch + 1
     
     # print overall statistics
-    print(f"""\nLowest validation loss is {min_val_loss / len(loader_list[2]):.4f}
-        at epoch {min_val_epoch}.""")
+    print(f"""\nLowest validation loss is {min_val_loss / len(loader_list[2]):.4f} at epoch {min_val_epoch}.""")
+
+    metrics_dict = {
+        "RMSE_loss" : {"train" : None, "test" : None, "validation" : None},
+        "R_squared" : {"train" : None, "test" : None, "validation" : None},
+        "training_duration" : training_duration,
+        "inference_latency" : None
+    }
+
+    return metrics_dict
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
@@ -219,4 +227,4 @@ if __name__ == "__main__":
     config_path = "nn_config.yaml"
 
     nn_model = Network(in_features, out_features, config_path)
-    train(nn_model, loader_list, "Train", config_path)
+    train(nn_model, loader_list, config_path)
