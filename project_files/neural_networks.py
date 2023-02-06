@@ -9,6 +9,7 @@ import datetime
 import json
 import os
 import pickle
+import random
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -70,6 +71,7 @@ class Network(nn.Module):
         return self.layers(features).reshape(-1)
         
 # %%
+
 def get_nn_config(file_path: str) -> dict:
     """Reads a YAML file containing neural netweork 
     configuration parameters and returns them in a dictionary.
@@ -84,7 +86,7 @@ def get_nn_config(file_path: str) -> dict:
     dict
         Dictionary of configuration parameters.
     """
-    with open(file_path, "r") as file:
+    with open(f"network_configs/{file_path}", "r") as file:
         try:
             config_dict = yaml.safe_load(file)
         except yaml.YAMLError as error:
@@ -282,3 +284,35 @@ if __name__ == "__main__":
     save_model(nn_model, hyperparams_dict, metrics_dict)
 
 # %%
+def generate_nn_configs(n_configs: int) -> list:
+    """Generates a list of configuration dictionaries.
+
+    Parameters
+    ----------
+    n_configs : int
+        Number of configurations to be created.
+
+    Returns
+    -------
+    list
+        List of configuration dictionaries.
+    """
+    dict_list = []
+    # generate values for applicable hyperparameters
+    for i in range(n_configs):
+        learning_rate = random.choice([1/i for i in [10**j for j in range(1, 5)]])
+        hidden_layer_width = random.choice([i for i in [2**j for j in range(1, 5)]])
+        epochs = random.choice([i for i in range(10, 50)])
+        config_dict = {
+            "optimiser" : "SGD",
+            "learning_rate" : learning_rate,
+            "hidden_layer_width" : hidden_layer_width,
+            "network_depth" : None,
+            "epochs" : epochs
+        }
+        print(f"{config_dict}\n")
+        dict_list.append(config_dict)
+
+    return dict_list
+# %%
+my_dict = generate_nn_configs(16)
