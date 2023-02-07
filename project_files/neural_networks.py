@@ -127,7 +127,6 @@ def train(model, data_loaders: list, config_file: str):
         # training loop
         model.train()
         train_loss = 0.0
-        train_r_squared = 0.0
         train_start_time = time.time()
         latency = np.zeros(len(data_loaders[0]))
         for i, (features, labels) in enumerate(data_loaders[0]): # train_loader
@@ -141,14 +140,12 @@ def train(model, data_loaders: list, config_file: str):
             latency[i] = prediction_end_time - prediction_start_time
             # calculate loss (mean squared error) and r_sqaured metric
             loss = F.mse_loss(prediction, labels)
-            train_batch_r_squared = r2_score(labels.detach().numpy(), prediction.detach().numpy())
             # backpropagation
             loss.backward()
             # optimisation
             optimiser.step()
             optimiser.zero_grad() # clear gradients
             train_loss += loss.item()
-            train_r_squared += train_batch_r_squared
             # add data to writer for tensorboard visualisation
             writer.add_scalar(tag=f"Train Loss", scalar_value=loss.item(), global_step=train_batch_index)
             train_batch_index += 1
@@ -159,7 +156,6 @@ def train(model, data_loaders: list, config_file: str):
         model.eval()
         # test loop
         test_loss = 0.0
-        test_r_squared = 0.0
         for features, labels in data_loaders[1]: # test_loader
             # check if GPU is available
             if torch.cuda.is_available():
@@ -168,16 +164,14 @@ def train(model, data_loaders: list, config_file: str):
             prediction = model(features)
             # calculate loss (mean squared error)
             loss = F.mse_loss(prediction, labels)
-            test_batch_r_squared = r2_score(labels.detach().numpy(), prediction.detach().numpy())
+            # test_batch_r_squared = r2_score(labels.detach().numpy(), prediction.detach().numpy())
             test_loss += loss.item()
-            test_r_squared += test_batch_r_squared
             # add data to writer for tensorboard visualisation
             writer.add_scalar(tag=f"Test Loss", scalar_value=loss.item(), global_step=test_batch_index)
             test_batch_index += 1
 
         # validation loop          
         val_loss = 0.0
-        val_r_squared = 0.0
         for features, labels in data_loaders[2]: # val_loader
             # check if GPU is available
             if torch.cuda.is_available():
@@ -186,18 +180,16 @@ def train(model, data_loaders: list, config_file: str):
             prediction = model(features)
             # calculate loss (mean squared error)
             loss = F.mse_loss(prediction, labels)
-            val_batch_r_squared = r2_score(labels.detach().numpy(), prediction.detach().numpy())
             val_loss += loss.item()
-            val_r_squared += val_batch_r_squared
             # add data to writer for tensorboard visualisation
             writer.add_scalar(tag=f"Validation Loss", scalar_value=loss.item(), global_step=val_batch_index)
             val_batch_index += 1
 
         # print epoch statistics
         if (epoch + 1) % 1 == 0:
-            print(f"""Epoch: {epoch + 1}    Training Loss: {train_loss / len(loader_list[0]):.4f}, Training r_squared: {train_batch_r_squared / len(loader_list[0]):.4f}
-            Test Loss: {test_loss / len(loader_list[1]):.4f}, Testing r_squared: {test_batch_r_squared / len(loader_list[1]):.4f}
-            Validation Loss: {val_loss / len(loader_list[2]):.4f}, Validation r_squared: {val_batch_r_squared / len(loader_list[2]):.4f}\n""")
+            print(f"""Epoch: {epoch + 1}    Training Loss: {train_loss / len(loader_list[0]):.4f}, 
+            Test Loss: {test_loss / len(loader_list[1]):.4f}, Testing r_squared: None
+            Validation Loss: {val_loss / len(loader_list[2]):.4f}, Validation r_squared: """)
 
         if min_val_loss > val_loss:
             min_val_loss = val_loss
@@ -208,7 +200,7 @@ def train(model, data_loaders: list, config_file: str):
 
     metrics_dict = {
         "RMSE_loss" : {"train" : round(train_loss / len(loader_list[0]), 4), "test" : round(test_loss / len(loader_list[1]), 4), "validation" : round(val_loss / len(loader_list[2]), 4)},
-        "R_squared" : {"train" : round(train_batch_r_squared / len(loader_list[0]), 4), "test" : round(test_batch_r_squared / len(loader_list[1]), 4), "validation" : round(val_batch_r_squared / len(loader_list[2]), 4)},
+        "R_squared" : {"test" : None, "validation" : None},
         "training_duration (s)" : round(training_duration, 3),
         "inference_latency" : round(latency.mean())
     }
@@ -329,25 +321,19 @@ if __name__ == "__main__":
 
     loader_list = [train_loader, test_loader, val_loader]
 
-    # initiate and train model
+    # initiate model parameters
     in_features = len(feature_df_normalised[0])
     out_features = 1
-    # config_path = "nn_config.yaml"
-
-    # nn_model = Network(in_features, out_features, config_path)
-    # metrics_dict = train(nn_model, loader_list, config_path)
-    # print(f"Metrics dictionary:\n{metrics_dict}.")
-
-    # # save model
-    # hyperparams_dict = get_nn_config("nn_config.yaml")
-    # save_model(nn_model, hyperparams_dict, metrics_dict)
-
+    
+    # generate and save a number of hyperparameter configurations
     my_dict = generate_nn_configs(n_configs=6)
     save_configs_as_yaml(my_dict)
 
+    # find the configuration with best metrics
     find_best_nn(in_features, out_features)
 
 # %%
 model_directory = "neural_networks/regression"
 for root, dirs, files in os.walk(model_directory):
     print(dirs)
+# %%
