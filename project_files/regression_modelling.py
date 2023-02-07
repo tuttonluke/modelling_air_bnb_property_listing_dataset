@@ -31,7 +31,6 @@ def read_in_data():
         numerical_tabular_df,
         label="Price_Night"
     )
-    feature_df = feature_df.drop("ID", axis=1)
     feature_df_scaled = normalise_data(feature_df)
 
     return feature_df_scaled, label_series
