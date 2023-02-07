@@ -2,11 +2,14 @@
 from read_tabular_data import TabularData
 from regression_modelling import read_in_data
 from sklearn.metrics import r2_score
-from torch.utils.data import Dataset, DataLoader
+from sklearn.model_selection import train_test_split
+from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
 import datetime
 import json
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import pickle
 import random
@@ -53,4 +56,45 @@ class NeuralNetwork(nn.Module):
     
     def forward(self, features: torch.tensor):
         return self.layers(features)
+# %% HELPER FUNCTIONS
+def visualise_data(X, y, feature_names):
+    fig, axs = plt.subplots(nrows=3, ncols=4, figsize=(30, 20))
+    for i, (ax, col) in enumerate(zip(axs.flat, feature_names)):
+        x = X[:, i]
+        pf = np.polyfit(x, y, 1)
+        p = np.poly1d(pf)
+
+        ax.plot(x, y, "o")
+        ax.plot(x, p(x), "r--")
+
+        ax.set_title(col + " vs Price per Night")
+        ax.set_xlabel(col)
+        ax.set_ylabel("Price per Night")
+    plt.show()
+
 # %%
+if __name__ == "__main__":
+    # seed RNG for reproducability
+    np.random.seed(42)
+    torch.manual_seed(42)
+
+    # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
+    tabular_df = TabularData()
+    numerical_tabular_df = tabular_df.get_numerical_data_df()
+    feature_df_normalised, label_series = read_in_data() 
+
+    # create torch dataset
+    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
+
+    # split data into train, test, and validation sets
+    train_subset, test_subset = random_split(dataset, [663, 166])
+    test_subset, val_subset = random_split(test_subset, [132, 34])
+
+    # initialise DataLoaders
+    batch_size = 4
+    train_loader = DataLoader(dataset, shuffle=True, batch_size=batch_size)
+
+    feature_names = tabular_df.get_feature_names()
+    print(feature_names)
+    visualise_data(feature_df_normalised, label_series, feature_names)
+
