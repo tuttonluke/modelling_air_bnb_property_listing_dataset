@@ -56,6 +56,35 @@ class NeuralNetwork(nn.Module):
     
     def forward(self, features: torch.tensor):
         return self.layers(features)
+# %%
+def train(model, loader, learning_rate, epochs, ):
+    optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    loss_function = nn.MSELoss()
+    writer = SummaryWriter()
+    batch_index = 0
+
+    for epoch in range(epochs):
+        running_loss = 0.0
+        for features, labels in loader:
+            # forward pass
+            outputs = model(features)
+            # define loss
+            loss = loss_function(outputs, labels)
+            # zero gradients
+            optimiser.zero_grad()
+            # compute gradients
+            loss.backward()
+            # accumulate running loss
+            running_loss += loss.item()
+            # update weights 
+            optimiser.step()
+            # add to writer for tensorboard visualisaiton
+            writer.add_scalar(tag="Train Loss", scalar_value=loss.item(), global_step=batch_index)
+            batch_index += 1
+        print("Epoch [%d]/[%d] running accumulative loss across all batches: %.3f" %
+                    (epoch + 1, epochs, running_loss))
+        running_loss = 0.0
+
 # %% HELPER FUNCTIONS
 def visualise_data(X, y, feature_names):
     fig, axs = plt.subplots(nrows=3, ncols=4, figsize=(30, 20))
