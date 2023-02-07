@@ -15,7 +15,8 @@ class TabularData:
         pd.DataFrame
             DataFrame with only numerical data.
         """
-        numerical_tabular_df = self.tabular_df.drop([
+        self.tabular_df = self.tabular_df.drop([
+                                                    "ID",
                                                     "Unnamed: 0",
                                                     "Category",
                                                     "Title",
@@ -24,7 +25,7 @@ class TabularData:
                                                     "Location",
                                                     "url"
                                                     ], axis=1)
-        return numerical_tabular_df
+        return self.tabular_df
     
     def load_airbnb(self, df, label="Price_Night"):
         """Splits tabular data into a DataFrame of Features and a Series of labels.
@@ -54,7 +55,7 @@ class TabularData:
         pd.DataFrame
             DataFrame with only numerical data.
         """
-        classification_tabular_df = self.tabular_df.drop([
+        self.tabular_df = self.tabular_df.drop([
                                                     "ID",
                                                     "Unnamed: 0",
                                                     "Title",
@@ -63,7 +64,13 @@ class TabularData:
                                                     "Location",
                                                     "url"
                                                     ], axis=1)
-        return classification_tabular_df
+        return self.tabular_df
+    
+    def get_feature_names(self, label="Price_Night"):
+        feature_list = self.tabular_df.columns.values.tolist()
+        feature_list.remove(label)
+
+        return feature_list
 
 #%%
 if __name__ == "__main__":
@@ -74,3 +81,6 @@ if __name__ == "__main__":
         clean_numerical_tabular_df,
         label="Price_Night"
     )
+
+    feature_list = clean_tabular_df.get_feature_names()
+    print(feature_list)
