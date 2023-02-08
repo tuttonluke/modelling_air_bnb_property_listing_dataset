@@ -59,9 +59,23 @@ class NeuralNetwork(nn.Module):
     def forward(self, features: torch.tensor):
         return self.layers(features)
 # %% TRAIN AND EVALUATION FUNCTIONS
-def train(model, loader: DataLoader, learning_rate: float, epochs: int):
+def train(model, loader: DataLoader, config_dict: dict):
+    """Trains the model.
 
-
+    Parameters
+    ----------
+    model : NeuralNetwork
+        Neural network model.
+    loader : DataLoader
+        DataLoader of training data.
+    config_dict : dict
+        Dictionary of configuration hyperparameters.
+    """
+    # get hyperparameters
+    learning_rate = config_dict["learning_rate"]
+    epochs = config_dict["epochs"]
+    
+    # define optimiser, criterion, and writer for tensorboard visualisation
     optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_function = nn.MSELoss()
     writer = SummaryWriter()
@@ -85,18 +99,34 @@ def train(model, loader: DataLoader, learning_rate: float, epochs: int):
             # add to writer for tensorboard visualisaiton
             writer.add_scalar(tag="Train Loss", scalar_value=loss.item(), global_step=batch_index)
             batch_index += 1
-        print("Epoch [%d]/[%d] running accumulative loss across all batches: %.3f" %
-                    (epoch + 1, epochs, running_loss))
+        # print epoch loss
+        if epoch % 10 == 0:
+            print("Epoch [%d]/[%d] running accumulative loss across all batches: %.3f" %
+                        (epoch + 1, epochs, running_loss))
         running_loss = 0.0
 
 def evaluate_model(model, loader: DataLoader) -> tuple:
+    """Calculate mean squared arro (MSE) and r^2 score
+    of the model for data in the loader.
+
+    Parameters
+    ----------
+    model : NeuralNetwork
+        Neural Network model.
+    loader : DataLoader
+        DataLoader of test (evaluation) data.
+
+    Returns
+    -------
+    tuple
+        tuple of MSE and r^2 values.
+    """
     model.eval()
     y_pred = []
     y_true = []
     with torch.no_grad():
         for X, y in loader:
             outputs = model(X)
-
             predicted = list(itertools.chain(*np.array(outputs)))
             y_pred.append(predicted)
             y_true.append(np.array(y))
@@ -217,24 +247,33 @@ if __name__ == "__main__":
                     "Check-in Rating", "Value Rating", "Amenities Count", "# Bedrooms"]
     visualise_features_vs_target(feature_df_normalised, label_series, feature_names)
 
-    # create torch dataset and split into train, test, and validation subsets
+    # create torch dataset and split into train and test subsets
     dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
-    train_subset, test_subset = random_split(dataset, [663, 166])
-    test_subset, val_subset = random_split(test_subset, [132, 34])
+    train_subset, test_subset = random_split(dataset, [729, 100])
+
 
     # initialise DataLoaders
     BATCH_SIZE = 4
     train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
-    val_loader = DataLoader(val_subset, batch_size=BATCH_SIZE)
 
+    
+    # # generate and save a number of hyperparameter configurations
+    # configurations_dict = generate_nn_configs(n_configs=6)
+    # save_configs_as_yaml(configurations_dict)
+
+    config_dict = {
+        "learning_rate" : 0.001,
+        "epochs" : 20
+    }
     # initialise and train model
-    model = NeuralNetwork(in_features=11, hidden_width=64, out_features=1)
-    train(model, train_loader, learning_rate=0.001, epochs=100)
+    model = NeuralNetwork(in_features=11, hidden_width=128, out_features=1)
+    train(model, train_loader, config_dict)
 
     # evaluate test and validation metrics
     test_MSE, test_r2 = evaluate_model(model, test_loader)
-    val_MSE, val_r2 = evaluate_model(model, val_loader)
+    print(f"Test set MSE: {test_MSE:.2f}, Test r2_score: {test_r2:.4f}")
+
 
 # %%
 # TODO
