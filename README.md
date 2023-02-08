@@ -88,3 +88,14 @@ The best model was selected based on the F1 score on predicitons of the validati
 
 Again, however, these tecniques are insufficient for robust classifications of the target labels.
 
+## Milestone 3: Deep Learning Models with PyTorch
+Technologies / Skills:
+ - PyTorch and Neural Networks
+    - Tensors
+    - Datasets and DataLoaders
+    - Transforms
+    - Activation functions
+    - Backpropagation
+    - Tensorboard
+
+A simple neural network was implemented in PyTorch
