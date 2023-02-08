@@ -60,6 +60,8 @@ class NeuralNetwork(nn.Module):
         return self.layers(features)
 # %% TRAIN AND EVALUATION FUNCTIONS
 def train(model, loader: DataLoader, learning_rate: float, epochs: int):
+
+
     optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_function = nn.MSELoss()
     writer = SummaryWriter()
@@ -87,7 +89,21 @@ def train(model, loader: DataLoader, learning_rate: float, epochs: int):
                     (epoch + 1, epochs, running_loss))
         running_loss = 0.0
 
+def evaluate_model(model, loader: DataLoader) -> tuple:
+    model.eval()
+    y_pred = []
+    y_true = []
+    with torch.no_grad():
+        for X, y in loader:
+            outputs = model(X)
 
+            predicted = list(itertools.chain(*np.array(outputs)))
+            y_pred.append(predicted)
+            y_true.append(np.array(y))
+    mse = mean_squared_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+
+    return mse, r2
 # %% HELPER FUNCTIONS
 def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: list):
     """Creates a 3x4 plot which visualises each feature seperately against
@@ -120,6 +136,70 @@ def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: li
             ax.set_ylabel("Price per Night", size=14)
     plt.show()
 
+def get_nn_config(file_path: str) -> dict:
+    """Reads a YAML file containing neural netweork 
+    configuration parameters and returns them in a dictionary.
+
+    Parameters
+    ----------
+    file_path : str
+        File path of YAML file.
+
+    Returns
+    -------
+    dict
+        Dictionary of configuration parameters.
+    """
+    with open(f"network_configs/{file_path}", "r") as file:
+        try:
+            config_dict = yaml.safe_load(file)
+        except yaml.YAMLError as error:
+            print(error)
+    return config_dict
+
+def generate_nn_configs(n_configs: int) -> list:
+    """Generates a list of configuration dictionaries.
+
+    Parameters
+    ----------
+    n_configs : int
+        Number of configurations to be created.
+
+    Returns
+    -------
+    list
+        List of configuration dictionaries.
+    """
+    dict_list = []
+    # generate values for applicable hyperparameters
+    for i in range(n_configs):
+        learning_rate = random.choice([1/i for i in [10**j for j in range(1, 5)]])
+        hidden_layer_width = random.choice([i for i in [2**j for j in range(3, 9)]])
+        epochs = random.choice([i for i in range(10, 50)])
+        config_dict = {
+            "optimiser" : "SGD",
+            "learning_rate" : learning_rate,
+            "hidden_layer_width" : hidden_layer_width,
+            "network_depth" : None,
+            "epochs" : epochs
+        }
+        # print(f"{config_dict}\n")
+        dict_list.append(config_dict)
+
+    return dict_list
+
+def save_configs_as_yaml(config_list: list):
+    """Takes a list of configuration dictionaries and saves each item
+    individually as a YAML file.
+
+    Parameters
+    ----------
+    config_list : list
+        List of configuration dictionaries.
+    """
+    for idx, config in enumerate(config_list):
+        with open(f"network_configs/{idx}.yaml", "w") as file:
+            yaml.dump(config, file)
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
@@ -143,35 +223,20 @@ if __name__ == "__main__":
     test_subset, val_subset = random_split(test_subset, [132, 34])
 
     # initialise DataLoaders
-    batch_size = 4
-    train_loader = DataLoader(train_subset, shuffle=True, batch_size=batch_size)
-    test_loader = DataLoader(test_subset, batch_size=batch_size)
-    val_loader = DataLoader(val_subset, batch_size=batch_size)
+    BATCH_SIZE = 4
+    train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
+    test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
+    val_loader = DataLoader(val_subset, batch_size=BATCH_SIZE)
 
     # initialise and train model
     model = NeuralNetwork(in_features=11, hidden_width=64, out_features=1)
     train(model, train_loader, learning_rate=0.001, epochs=100)
 
-# %%
-# TODO train docstring
-def evaluate_model(model, loader: DataLoader):
-    model.eval()
-    y_pred = []
-    y_true = []
-    with torch.no_grad():
-        for X, y in loader:
-            outputs = model(X)
-
-            predicted = list(itertools.chain(*np.array(outputs)))
-            y_pred.append(predicted)
-            y_true.append(np.array(y))
-    mse = mean_squared_error(y_true, y_pred)
-    r2 = r2_score(y_true, y_pred)
-
-    return mse, r2
-
+    # evaluate test and validation metrics
+    test_MSE, test_r2 = evaluate_model(model, test_loader)
+    val_MSE, val_r2 = evaluate_model(model, val_loader)
 
 # %%
-test_MSE, test_r2 = evaluate_model(model, test_loader)
-val_MSE, va_r2 = evaluate_model(model, val_loader)
-
+# TODO
+# train and evaluate model docstrings
+# all other helper functions
