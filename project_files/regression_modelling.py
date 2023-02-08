@@ -22,7 +22,7 @@ def read_in_data():
     Returns
     -------
     tupple
-        Tuple containing DataFrames of features and labels.
+        Tuple containing numpy arrays of features and labels.
     """
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
@@ -33,7 +33,7 @@ def read_in_data():
     )
     feature_df_scaled = normalise_data(feature_df)
 
-    return feature_df_scaled, label_series
+    return feature_df_scaled, np.array(label_series)
 
 def split_data(feature_dataframe, label_series, test_size=0.3):
     """Splits feature dataframe into train, test, and validation sets
