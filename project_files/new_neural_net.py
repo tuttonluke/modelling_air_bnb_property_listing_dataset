@@ -57,7 +57,7 @@ class NeuralNetwork(nn.Module):
     def forward(self, features: torch.tensor):
         return self.layers(features)
 # %%
-def train(model, loader, learning_rate, epochs, ):
+def train(model, loader, learning_rate: float, epochs: int):
     optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_function = nn.MSELoss()
     writer = SummaryWriter()
@@ -121,9 +121,12 @@ if __name__ == "__main__":
 
     # initialise DataLoaders
     batch_size = 4
-    train_loader = DataLoader(dataset, shuffle=True, batch_size=batch_size)
+    train_loader = DataLoader(train_subset, shuffle=True, batch_size=batch_size)
 
     feature_names = tabular_df.get_feature_names()
     print(feature_names)
     visualise_data(feature_df_normalised, label_series, feature_names)
 
+    model = NeuralNetwork(in_features=11, hidden_width=64, out_features=1)
+
+    train(model, train_loader, learning_rate=0.001, epochs=100)
