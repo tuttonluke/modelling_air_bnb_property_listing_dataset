@@ -190,6 +190,29 @@ def evaluate_model(model, loader: DataLoader) -> tuple:
     r2 = r2_score(y_true, y_pred)
 
     return mse, r2
+
+def find_best_nn():
+    best_mse = np.inf
+    best_r2 = -np.inf
+
+    config_directory = r"neural_networks\regression"
+    for idx, (root, dirs, files) in enumerate(os.walk(config_directory)):
+        for file in files:
+            if file == "metrics.json":
+                with open(f"{root}\{file}") as metrics_json:
+                    metrics_dict = json.load(metrics_json)
+                    # update best model for MSE score
+                    if metrics_dict["test_MSE"] < best_mse:
+                        best_mse = metrics_dict["test_MSE"]
+                        best_mse_model = f"{idx}, {root[27:]}"
+                    # update best model for r_squared score
+                    if metrics_dict["test_r_squared"] > best_r2:
+                        best_r2 = metrics_dict["test_r_squared"]
+                        best_r2_model = f"{idx}, {root[27:]}"
+    
+    # Print scores and location of best model                    
+    print(f"Best MSE is {best_mse:.2f}, model {best_mse_model}")
+    print(f"Best r_squared score is {best_r2:.4f}, model {best_r2_model}")
 # %% HELPER FUNCTIONS
 def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: list):
     """Creates a 3x4 plot which visualises each feature seperately against
@@ -345,10 +368,5 @@ if __name__ == "__main__":
     # initialise, train, and evaluate models
     train_networks(in_features=11, hidden_width=128, out_features=1)
 
-
-# TODO
-# train time
-# prediction time
-# %%
-def find_best_nn():
-    pass
+    # find the best model from all those trained
+    find_best_nn()
