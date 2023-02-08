@@ -11,6 +11,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pandas as pd
 import pickle
 import random
 import torch
@@ -56,7 +57,7 @@ class NeuralNetwork(nn.Module):
     
     def forward(self, features: torch.tensor):
         return self.layers(features)
-# %%
+# %% 
 def train(model, loader, learning_rate: float, epochs: int):
     optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_function = nn.MSELoss()
@@ -86,19 +87,35 @@ def train(model, loader, learning_rate: float, epochs: int):
         running_loss = 0.0
 
 # %% HELPER FUNCTIONS
-def visualise_data(X, y, feature_names):
+def visualise_data(X: np.ndarray, y: np.ndarray, feature_names: list):
+    """Creates a 3x4 plot which visualises each feature seperately against
+    the target label as a scatter plot. Also plots a line fitted to minimise
+    the squared error in each case.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        Feature array.
+    y : np.ndarray
+        Label array.
+    feature_names : list
+        List of feature names for use in subplot titles.
+    """
     fig, axs = plt.subplots(nrows=3, ncols=4, figsize=(30, 20))
     for i, (ax, col) in enumerate(zip(axs.flat, feature_names)):
         x = X[:, i]
+        # calculate line of best fit
         pf = np.polyfit(x, y, 1)
         p = np.poly1d(pf)
 
         ax.plot(x, y, "o")
         ax.plot(x, p(x), "r--")
 
-        ax.set_title(col + " vs Price per Night")
-        ax.set_xlabel(col)
-        ax.set_ylabel("Price per Night")
+        fig.suptitle("Visualisation of Each Feature vs Target Label", y=0.93, size=24)
+        ax.set_title(col + " vs Price per Night", size=16)
+        ax.set_xlabel(col, size=14)
+        if i % 4 == 0:
+            ax.set_ylabel("Price per Night", size=14)
     plt.show()
 
 # %%
@@ -122,11 +139,14 @@ if __name__ == "__main__":
     # initialise DataLoaders
     batch_size = 4
     train_loader = DataLoader(train_subset, shuffle=True, batch_size=batch_size)
-
-    feature_names = tabular_df.get_feature_names()
+    feature_names = ["# Guests", "# Beds", "# Bathrooms", "Cleanliness Rating",
+                    "Accuracy Rating", "Communication Rating", "Location Rating",
+                    "Check-in Rating", "Value Rating", "Amenities Count", "# Bedrooms"]
     print(feature_names)
     visualise_data(feature_df_normalised, label_series, feature_names)
 
     model = NeuralNetwork(in_features=11, hidden_width=64, out_features=1)
 
-    train(model, train_loader, learning_rate=0.001, epochs=100)
+    # train(model, train_loader, learning_rate=0.001, epochs=100)
+
+# %%
