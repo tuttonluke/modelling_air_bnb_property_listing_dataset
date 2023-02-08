@@ -2,7 +2,6 @@
 from read_tabular_data import TabularData
 from regression_modelling import read_in_data
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
@@ -69,7 +68,7 @@ class NeuralNetwork(nn.Module):
     def forward(self, features: torch.tensor):
         return self.layers(features)
 # %% TRAIN AND EVALUATION FUNCTIONS
-def train(model, loader: DataLoader, config_dict: dict):
+def train_model(model, loader: DataLoader, config_dict: dict):
     """Trains the model.
 
     Parameters
@@ -139,7 +138,7 @@ def train_networks(in_features: int, hidden_width: int, out_features: int):
         for file in files:
             nn_model = NeuralNetwork(in_features, hidden_width, out_features)
             config_dict = get_nn_config(file)
-            train(nn_model, train_loader, config_dict)
+            train_model(nn_model, train_loader, config_dict)
             mse, r2 = evaluate_model(nn_model, test_loader)
             metrics_dict["test_MSE"] = mse.astype("float64")
             metrics_dict["test_r_squared"] = r2.astype("float64")
@@ -250,8 +249,8 @@ def generate_nn_configs(n_configs: int) -> list:
     dict_list = []
     # generate values for applicable hyperparameters
     for i in range(n_configs):
-        learning_rate = random.choice([1/i for i in [10**j for j in range(1, 5)]])
-        epochs = random.choice([i for i in range(10, 50)])
+        learning_rate = random.choice([1/i for i in [10**j for j in range(3, 5)]])
+        epochs = random.choice([i for i in range(5, 30)])
         config_dict = {
             "learning_rate" : learning_rate,
             "epochs" : epochs
@@ -330,39 +329,16 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
     
     # generate and save a number of hyperparameter configurations
-    configurations_dict = generate_nn_configs(n_configs=6)
+    configurations_dict = generate_nn_configs(n_configs=3)
     save_configs_as_yaml(configurations_dict)
 
     # initialise, train, and evaluate models
     train_networks(in_features=11, hidden_width=128, out_features=1)
 
 
-
-    # # initialise and train model
-    # model = NeuralNetwork(in_features=11, hidden_width=128, out_features=1)
-    # train(model, train_loader, config_dict)
-
-    # # evaluate test and validation metrics
-    # test_MSE, test_r2 = evaluate_model(model, test_loader)
-    # print(f"Test set MSE: {test_MSE:.2f}, Test r2_score: {test_r2:.4f}")
-
-
-# %%
-
-
-
-
-# %%
-
-train_networks(in_features=11, hidden_width=128, out_features=1)
-# %%
-# hyperparams_dict = {"hi" : 2.4, "yo" : 42}
-# metrics_dict = {'test_MSE': 13825.15, 'test_r_squared': -1.2281}
-
-
-
-# save_model(model, hyperparams_dict, metrics_dict)
-
 # TODO
 # train time
 # prediction time
+# %%
+def find_best_nn():
+    pass
