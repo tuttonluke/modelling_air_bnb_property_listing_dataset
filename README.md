@@ -28,9 +28,11 @@ The python files [prepare_tabular_data.py](https://github.com/tuttonluke/modelli
 
 Simple Pandas DataFrame manipulations were used to deal with missing data, clean text data, and save the cleaned tabular data to a new csv file, named [clean_tabular_data.csv](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/tabular_data/clean_tabular_data.csv).
 
-Images relevant to the AirBnB listings were saved on the cloud using Amazon Web Services S3 service. The ImageProcessing class in the [prepare_image_data.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/prepare_image_data.py) file contains methods using the boto3 Softward Development Kit packageto download the images, and rescale the images to the height of the smallest inage in the data set.
+Images relevant to the AirBnB listings were saved on the cloud using Amazon Web Services S3 service. The ImageProcessing class in the [prepare_image_data.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/prepare_image_data.py) file contains methods using the boto3 Softward Development Kit packageto download the images, and rescale the images to the height of the smallest image in the data set.
 
-(screenshot of rescaled image?)
+The following is a plot of of all the features containing numerical data which were used for regression and classification modelling. Each feature is visualised seperately in a scatter plot against the target label, Price per Night:
+
+![feature_visualisation](/project_files/documentation_images/feature_visualisation.png?raw=True)
 
 ## Milestone 2: Regression and Classification Models
 Technologies / Skills:
