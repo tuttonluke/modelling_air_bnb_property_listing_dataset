@@ -204,16 +204,11 @@ def generate_nn_configs(n_configs: int) -> list:
     # generate values for applicable hyperparameters
     for i in range(n_configs):
         learning_rate = random.choice([1/i for i in [10**j for j in range(1, 5)]])
-        hidden_layer_width = random.choice([i for i in [2**j for j in range(3, 9)]])
         epochs = random.choice([i for i in range(10, 50)])
         config_dict = {
-            "optimiser" : "SGD",
             "learning_rate" : learning_rate,
-            "hidden_layer_width" : hidden_layer_width,
-            "network_depth" : None,
             "epochs" : epochs
         }
-        # print(f"{config_dict}\n")
         dict_list.append(config_dict)
 
     return dict_list
@@ -256,7 +251,6 @@ if __name__ == "__main__":
     BATCH_SIZE = 4
     train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
-
     
     # # generate and save a number of hyperparameter configurations
     # configurations_dict = generate_nn_configs(n_configs=6)
@@ -276,6 +270,66 @@ if __name__ == "__main__":
 
 
 # %%
+def train_nns(in_features, hidden_width, out_features):
+    config_directory = "network_configs"
+    metrics_dict = {
+        "test_MSE" : None,
+        "test_r_squared" : None
+    }
+    for root, dirs, files in os.walk(config_directory):
+        for file in files:
+            nn_model = NeuralNetwork(in_features, hidden_width, out_features)
+            config_dict = get_nn_config(file)
+            train(nn_model, train_loader, config_dict)
+            mse, r2 = evaluate_model(nn_model, test_loader)
+            metrics_dict["test_MSE"] = round(mse, 2)
+            metrics_dict["test_r_squared"] = round(r2, 4)
+            print(metrics_dict)
+
+            print(config_dict)
+            # save model
+            save_model(nn_model, config_dict, metrics_dict)
+
+# %%
+configurations_dict = generate_nn_configs(n_configs=1)
+save_configs_as_yaml(configurations_dict)
+
+train_nns(in_features=11, hidden_width=128, out_features=1)
+# %%
+hyperparams_dict = {"hi" : 2.4, "yo" : 42}
+metrics_dict = {'test_MSE': 13825.15, 'test_r_squared': -1.2281}
+
+def save_model(model, hyperparams: dict, metrics: dict):
+    """Saves the model, hyperparamers, and metrics in designated folder.
+
+    Parameters
+    ----------
+    model : Trained model.
+        Model to be saved.
+    hyperparams : dict
+        Dictionary of best hyperparameters.
+    metrics : dict
+        Dictionary of performance metrics.
+    """ 
+    # create a folder with current date and time to save the model in 
+    current_time = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
+    folder_path = f"neural_networks/regression/{current_time}"
+    os.mkdir(folder_path)   
+    
+    # save model
+    with open(f"{folder_path}/model.pt", "wb") as file:
+        pickle.dump(model, file)
+    
+    # save hyperparameters
+    with open(f"{folder_path}/hyperparams.json", "w") as file:
+        json.dump(hyperparams, file)
+
+    # save model metrics in json file
+    with open(f"{folder_path}/metrics.json", "w") as file:
+        json.dump(metrics, file)
+
+save_model(model, hyperparams_dict, metrics_dict)
+
 # TODO
-# train and evaluate model docstrings
-# all other helper functions
+# train time
+# prediction time
