@@ -2,7 +2,7 @@
 from read_tabular_data import TabularData
 from regression_modelling import read_in_data
 from sklearn.metrics import mean_squared_error, r2_score
-from torch.utils.data import Dataset, DataLoader, TensorDataset
+from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
 import datetime
@@ -89,7 +89,9 @@ def train_model(model, loader: DataLoader, config_dict: dict):
     loss_function = nn.MSELoss()
     writer = SummaryWriter()
     batch_index = 0
+    train_start_time = time.time()
 
+    # training loop
     for epoch in range(epochs):
         running_loss = 0.0
         for features, labels in loader:
@@ -108,11 +110,18 @@ def train_model(model, loader: DataLoader, config_dict: dict):
             # add to writer for tensorboard visualisaiton
             writer.add_scalar(tag="Train Loss", scalar_value=loss.item(), global_step=batch_index)
             batch_index += 1
+
         # print epoch loss
         if epoch % 10 == 0:
             print("Epoch [%d]/[%d] running accumulative loss across all batches: %.3f" %
                         (epoch + 1, epochs, running_loss))
         running_loss = 0.0
+
+    # time training
+    train_end_time = time.time()
+    training_duration = train_end_time - train_start_time
+
+    return training_duration
 
 def train_networks(in_features: int, hidden_width: int, out_features: int):
     """Trains models based on yaml configuration files stored in the
@@ -131,23 +140,24 @@ def train_networks(in_features: int, hidden_width: int, out_features: int):
     config_directory = "network_configs"
     metrics_dict = {
         "test_MSE" : None,
-        "test_r_squared" : None
+        "test_r_squared" : None,
+        "training_time" : None
     }
     # locate and loop through YAML configureation files
     for root, dirs, files in os.walk(config_directory):
         for file in files:
             nn_model = NeuralNetwork(in_features, hidden_width, out_features)
             config_dict = get_nn_config(file)
-            train_model(nn_model, train_loader, config_dict)
+            training_time = train_model(nn_model, train_loader, config_dict)
             mse, r2 = evaluate_model(nn_model, test_loader)
             metrics_dict["test_MSE"] = mse.astype("float64")
             metrics_dict["test_r_squared"] = r2.astype("float64")
-            
+            metrics_dict["training_time"] = training_time
             # print parameters and metrics
             print(config_dict)
             print(f"Test MSE: {metrics_dict['test_MSE']:.2f}")
-            print(f"Test r_squared score: {metrics_dict['test_r_squared']:.4f}\n")
-
+            print(f"Test r_squared score: {metrics_dict['test_r_squared']:.4f}")
+            print(f"Training duration: {training_time:.2f} seconds.\n")
             # save model
             save_model(nn_model, config_dict, metrics_dict)
 
