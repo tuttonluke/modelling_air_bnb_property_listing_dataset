@@ -192,6 +192,10 @@ def evaluate_model(model, loader: DataLoader) -> tuple:
     return mse, r2
 
 def find_best_nn():
+    """Cycles through all metrics json files in designated config_directory
+    and prints the metrics and file location of the model with the highest
+    mean squared error and r_squares scores.
+    """
     best_mse = np.inf
     best_r2 = -np.inf
 
@@ -204,15 +208,16 @@ def find_best_nn():
                     # update best model for MSE score
                     if metrics_dict["test_MSE"] < best_mse:
                         best_mse = metrics_dict["test_MSE"]
-                        best_mse_model = f"{idx}, {root[27:]}"
+                        best_mse_model = f"{idx-1}, {root[27:]}"
                     # update best model for r_squared score
                     if metrics_dict["test_r_squared"] > best_r2:
                         best_r2 = metrics_dict["test_r_squared"]
-                        best_r2_model = f"{idx}, {root[27:]}"
+                        best_r2_model = f"{idx-1}, {root[27:]}"
     
     # Print scores and location of best model                    
     print(f"Best MSE is {best_mse:.2f}, model {best_mse_model}")
     print(f"Best r_squared score is {best_r2:.4f}, model {best_r2_model}")
+
 # %% HELPER FUNCTIONS
 def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: list):
     """Creates a 3x4 plot which visualises each feature seperately against
@@ -282,7 +287,7 @@ def generate_nn_configs(n_configs: int) -> list:
     dict_list = []
     # generate values for applicable hyperparameters
     for i in range(n_configs):
-        learning_rate = random.choice([1/i for i in [10**j for j in range(3, 5)]])
+        learning_rate = random.choice([1/i for i in [10**j for j in range(3, 4)]])
         epochs = random.choice([i for i in range(5, 30)])
         config_dict = {
             "learning_rate" : learning_rate,
@@ -362,7 +367,7 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
     
     # generate and save a number of hyperparameter configurations
-    configurations_dict = generate_nn_configs(n_configs=3)
+    configurations_dict = generate_nn_configs(n_configs=16)
     save_configs_as_yaml(configurations_dict)
 
     # initialise, train, and evaluate models
