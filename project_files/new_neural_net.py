@@ -11,12 +11,10 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
 import pickle
 import random
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import time
 import yaml
@@ -57,6 +55,10 @@ class NeuralNetwork(nn.Module):
         # model architecture
         self.layers = nn.Sequential(
             nn.Linear(in_features, hidden_width),
+            nn.ReLU(),
+            nn.Linear(hidden_width, hidden_width),
+            nn.ReLU(),
+            nn.Linear(hidden_width, hidden_width),
             nn.ReLU(),
             nn.Linear(hidden_width, hidden_width),
             nn.ReLU(),
