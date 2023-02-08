@@ -1,12 +1,13 @@
 # %%
 from read_tabular_data import TabularData
 from regression_modelling import read_in_data
-from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torch.utils.data import random_split
 from torch.utils.tensorboard import SummaryWriter
 import datetime
+import itertools
 import json
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +26,7 @@ class AirBnBNightlyPriceImageDataset(Dataset):
     """Creates a PyTorch dataset  of the AirBnb data that returns a tuple 
     of (features, labels) when indexed.
     """
-    def __init__(self, features: torch.tensor, labels: torch.tensor) -> None:
+    def __init__(self, features: torch.Tensor, labels: torch.Tensor) -> None:
         super().__init__()
         # assert feature and label sets are the same length
         assert len(features) == len(labels)
@@ -57,8 +58,8 @@ class NeuralNetwork(nn.Module):
     
     def forward(self, features: torch.tensor):
         return self.layers(features)
-# %% 
-def train(model, loader, learning_rate: float, epochs: int):
+# %% TRAIN AND EVALUATION FUNCTIONS
+def train(model, loader: DataLoader, learning_rate: float, epochs: int):
     optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate)
     loss_function = nn.MSELoss()
     writer = SummaryWriter()
@@ -70,7 +71,7 @@ def train(model, loader, learning_rate: float, epochs: int):
             # forward pass
             outputs = model(features)
             # define loss
-            loss = loss_function(outputs, labels)
+            loss = loss_function(outputs, labels.unsqueeze(-1))
             # zero gradients
             optimiser.zero_grad()
             # compute gradients
@@ -86,8 +87,9 @@ def train(model, loader, learning_rate: float, epochs: int):
                     (epoch + 1, epochs, running_loss))
         running_loss = 0.0
 
+
 # %% HELPER FUNCTIONS
-def visualise_data(X: np.ndarray, y: np.ndarray, feature_names: list):
+def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: list):
     """Creates a 3x4 plot which visualises each feature seperately against
     the target label as a scatter plot. Also plots a line fitted to minimise
     the squared error in each case.
@@ -127,26 +129,49 @@ if __name__ == "__main__":
     # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
-    feature_df_normalised, label_series = read_in_data() 
+    feature_df_normalised, label_series = read_in_data()
 
-    # create torch dataset
+    # Visualise Data
+    feature_names = ["# Guests", "# Beds", "# Bathrooms", "Cleanliness Rating",
+                    "Accuracy Rating", "Communication Rating", "Location Rating",
+                    "Check-in Rating", "Value Rating", "Amenities Count", "# Bedrooms"]
+    visualise_features_vs_target(feature_df_normalised, label_series, feature_names)
+
+    # create torch dataset and split into train, test, and validation subsets
     dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
-
-    # split data into train, test, and validation sets
     train_subset, test_subset = random_split(dataset, [663, 166])
     test_subset, val_subset = random_split(test_subset, [132, 34])
 
     # initialise DataLoaders
     batch_size = 4
     train_loader = DataLoader(train_subset, shuffle=True, batch_size=batch_size)
-    feature_names = ["# Guests", "# Beds", "# Bathrooms", "Cleanliness Rating",
-                    "Accuracy Rating", "Communication Rating", "Location Rating",
-                    "Check-in Rating", "Value Rating", "Amenities Count", "# Bedrooms"]
-    print(feature_names)
-    visualise_data(feature_df_normalised, label_series, feature_names)
+    test_loader = DataLoader(test_subset, batch_size=batch_size)
+    val_loader = DataLoader(val_subset, batch_size=batch_size)
 
+    # initialise and train model
     model = NeuralNetwork(in_features=11, hidden_width=64, out_features=1)
-
-    # train(model, train_loader, learning_rate=0.001, epochs=100)
+    train(model, train_loader, learning_rate=0.001, epochs=100)
 
 # %%
+# TODO train docstring
+def evaluate_model(model, loader: DataLoader):
+    model.eval()
+    y_pred = []
+    y_true = []
+    with torch.no_grad():
+        for X, y in loader:
+            outputs = model(X)
+
+            predicted = list(itertools.chain(*np.array(outputs)))
+            y_pred.append(predicted)
+            y_true.append(np.array(y))
+    mse = mean_squared_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+
+    return mse, r2
+
+
+# %%
+test_MSE, test_r2 = evaluate_model(model, test_loader)
+val_MSE, va_r2 = evaluate_model(model, val_loader)
+
