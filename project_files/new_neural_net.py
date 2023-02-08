@@ -225,6 +225,36 @@ def save_configs_as_yaml(config_list: list):
     for idx, config in enumerate(config_list):
         with open(f"network_configs/{idx}.yaml", "w") as file:
             yaml.dump(config, file)
+
+def save_model(model, hyperparams: dict, metrics: dict):
+    """Saves the model, hyperparamers, and metrics in designated folder.
+
+    Parameters
+    ----------
+    model : Trained model.
+        Model to be saved.
+    hyperparams : dict
+        Dictionary of best hyperparameters.
+    metrics : dict
+        Dictionary of performance metrics.
+    """ 
+    # create a folder with current date and time to save the model in 
+    current_time = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
+    folder_path = f"neural_networks/regression/{current_time}"
+    os.mkdir(folder_path)   
+    
+    # save model
+    with open(f"{folder_path}/model.pt", "wb") as file:
+        pickle.dump(model, file)
+    
+    # save hyperparameters
+    with open(f"{folder_path}/hyperparams.json", "w") as file:
+        json.dump(hyperparams, file)
+
+    # save model metrics in json file
+    with open(f"{folder_path}/metrics.json", "w") as file:
+        json.dump(metrics, file)
+
 # %%
 if __name__ == "__main__":
     # seed RNG for reproducability
@@ -256,17 +286,17 @@ if __name__ == "__main__":
     # configurations_dict = generate_nn_configs(n_configs=6)
     # save_configs_as_yaml(configurations_dict)
 
-    config_dict = {
-        "learning_rate" : 0.001,
-        "epochs" : 20
-    }
-    # initialise and train model
-    model = NeuralNetwork(in_features=11, hidden_width=128, out_features=1)
-    train(model, train_loader, config_dict)
+    # config_dict = {
+    #     "learning_rate" : 0.001,
+    #     "epochs" : 20
+    # }
+    # # initialise and train model
+    # model = NeuralNetwork(in_features=11, hidden_width=128, out_features=1)
+    # train(model, train_loader, config_dict)
 
-    # evaluate test and validation metrics
-    test_MSE, test_r2 = evaluate_model(model, test_loader)
-    print(f"Test set MSE: {test_MSE:.2f}, Test r2_score: {test_r2:.4f}")
+    # # evaluate test and validation metrics
+    # test_MSE, test_r2 = evaluate_model(model, test_loader)
+    # print(f"Test set MSE: {test_MSE:.2f}, Test r2_score: {test_r2:.4f}")
 
 
 # %%
@@ -282,53 +312,31 @@ def train_nns(in_features, hidden_width, out_features):
             config_dict = get_nn_config(file)
             train(nn_model, train_loader, config_dict)
             mse, r2 = evaluate_model(nn_model, test_loader)
-            metrics_dict["test_MSE"] = round(mse, 2)
-            metrics_dict["test_r_squared"] = round(r2, 4)
-            print(metrics_dict)
-
+            metrics_dict["test_MSE"] = mse.astype("float64")
+            metrics_dict["test_r_squared"] = r2.astype("float64")
+            
+            # print parameters and metrics
             print(config_dict)
+            print(f"Test MSE: {metrics_dict['test_MSE']:.2f}")
+            print(f"Test r_squared score: {metrics_dict['test_r_squared']:.4f}\n")
+
             # save model
             save_model(nn_model, config_dict, metrics_dict)
 
+
+
 # %%
-configurations_dict = generate_nn_configs(n_configs=1)
+configurations_dict = generate_nn_configs(n_configs=3)
 save_configs_as_yaml(configurations_dict)
 
 train_nns(in_features=11, hidden_width=128, out_features=1)
 # %%
-hyperparams_dict = {"hi" : 2.4, "yo" : 42}
-metrics_dict = {'test_MSE': 13825.15, 'test_r_squared': -1.2281}
+# hyperparams_dict = {"hi" : 2.4, "yo" : 42}
+# metrics_dict = {'test_MSE': 13825.15, 'test_r_squared': -1.2281}
 
-def save_model(model, hyperparams: dict, metrics: dict):
-    """Saves the model, hyperparamers, and metrics in designated folder.
 
-    Parameters
-    ----------
-    model : Trained model.
-        Model to be saved.
-    hyperparams : dict
-        Dictionary of best hyperparameters.
-    metrics : dict
-        Dictionary of performance metrics.
-    """ 
-    # create a folder with current date and time to save the model in 
-    current_time = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
-    folder_path = f"neural_networks/regression/{current_time}"
-    os.mkdir(folder_path)   
-    
-    # save model
-    with open(f"{folder_path}/model.pt", "wb") as file:
-        pickle.dump(model, file)
-    
-    # save hyperparameters
-    with open(f"{folder_path}/hyperparams.json", "w") as file:
-        json.dump(hyperparams, file)
 
-    # save model metrics in json file
-    with open(f"{folder_path}/metrics.json", "w") as file:
-        json.dump(metrics, file)
-
-save_model(model, hyperparams_dict, metrics_dict)
+# save_model(model, hyperparams_dict, metrics_dict)
 
 # TODO
 # train time
