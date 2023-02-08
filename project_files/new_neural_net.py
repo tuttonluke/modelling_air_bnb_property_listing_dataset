@@ -43,6 +43,16 @@ class NeuralNetwork(nn.Module):
     """Defines the neural network architecture for the regression problem.
     """
     def __init__(self, in_features: int, hidden_width: int, out_features: int) -> None:
+        """
+        Parameters
+        ----------
+        in_features : int
+            Number of features.
+        hidden_width : int
+            Number of hidden layer nodes.
+        out_features : int
+            Number of labels.
+        """
         super().__init__()
 
         # model architecture
@@ -104,6 +114,43 @@ def train(model, loader: DataLoader, config_dict: dict):
             print("Epoch [%d]/[%d] running accumulative loss across all batches: %.3f" %
                         (epoch + 1, epochs, running_loss))
         running_loss = 0.0
+
+def train_networks(in_features: int, hidden_width: int, out_features: int):
+    """Trains models based on yaml configuration files stored in the
+    config_dictionary file location. The model is then saved, and the
+    metrics and hyperarameters are saved in .json files.
+
+    Parameters
+    ----------
+        in_features : int
+            Number of features.
+        hidden_width : int
+            Number of hidden layer nodes.
+        out_features : int
+            Number of labels.
+    """
+    config_directory = "network_configs"
+    metrics_dict = {
+        "test_MSE" : None,
+        "test_r_squared" : None
+    }
+    # locate and loop through YAML configureation files
+    for root, dirs, files in os.walk(config_directory):
+        for file in files:
+            nn_model = NeuralNetwork(in_features, hidden_width, out_features)
+            config_dict = get_nn_config(file)
+            train(nn_model, train_loader, config_dict)
+            mse, r2 = evaluate_model(nn_model, test_loader)
+            metrics_dict["test_MSE"] = mse.astype("float64")
+            metrics_dict["test_r_squared"] = r2.astype("float64")
+            
+            # print parameters and metrics
+            print(config_dict)
+            print(f"Test MSE: {metrics_dict['test_MSE']:.2f}")
+            print(f"Test r_squared score: {metrics_dict['test_r_squared']:.4f}\n")
+
+            # save model
+            save_model(nn_model, config_dict, metrics_dict)
 
 def evaluate_model(model, loader: DataLoader) -> tuple:
     """Calculate mean squared arro (MSE) and r^2 score
@@ -282,14 +329,15 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
     test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
     
-    # # generate and save a number of hyperparameter configurations
-    # configurations_dict = generate_nn_configs(n_configs=6)
-    # save_configs_as_yaml(configurations_dict)
+    # generate and save a number of hyperparameter configurations
+    configurations_dict = generate_nn_configs(n_configs=6)
+    save_configs_as_yaml(configurations_dict)
 
-    # config_dict = {
-    #     "learning_rate" : 0.001,
-    #     "epochs" : 20
-    # }
+    # initialise, train, and evaluate models
+    train_networks(in_features=11, hidden_width=128, out_features=1)
+
+
+
     # # initialise and train model
     # model = NeuralNetwork(in_features=11, hidden_width=128, out_features=1)
     # train(model, train_loader, config_dict)
@@ -300,36 +348,13 @@ if __name__ == "__main__":
 
 
 # %%
-def train_nns(in_features, hidden_width, out_features):
-    config_directory = "network_configs"
-    metrics_dict = {
-        "test_MSE" : None,
-        "test_r_squared" : None
-    }
-    for root, dirs, files in os.walk(config_directory):
-        for file in files:
-            nn_model = NeuralNetwork(in_features, hidden_width, out_features)
-            config_dict = get_nn_config(file)
-            train(nn_model, train_loader, config_dict)
-            mse, r2 = evaluate_model(nn_model, test_loader)
-            metrics_dict["test_MSE"] = mse.astype("float64")
-            metrics_dict["test_r_squared"] = r2.astype("float64")
-            
-            # print parameters and metrics
-            print(config_dict)
-            print(f"Test MSE: {metrics_dict['test_MSE']:.2f}")
-            print(f"Test r_squared score: {metrics_dict['test_r_squared']:.4f}\n")
 
-            # save model
-            save_model(nn_model, config_dict, metrics_dict)
 
 
 
 # %%
-configurations_dict = generate_nn_configs(n_configs=3)
-save_configs_as_yaml(configurations_dict)
 
-train_nns(in_features=11, hidden_width=128, out_features=1)
+train_networks(in_features=11, hidden_width=128, out_features=1)
 # %%
 # hyperparams_dict = {"hi" : 2.4, "yo" : 42}
 # metrics_dict = {'test_MSE': 13825.15, 'test_r_squared': -1.2281}
