@@ -60,10 +60,6 @@ class NeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(hidden_width, hidden_width),
             nn.ReLU(),
-            nn.Linear(hidden_width, hidden_width),
-            nn.ReLU(),
-            nn.Linear(hidden_width, hidden_width),
-            nn.ReLU(),
             nn.Linear(hidden_width, out_features)
         )
     
@@ -377,3 +373,6 @@ if __name__ == "__main__":
 
     # find the best model from all those trained
     find_best_nn()
+
+
+
