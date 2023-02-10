@@ -104,8 +104,10 @@ def find_best_nn():
     """
     best_mse = np.inf
     best_r2 = -np.inf
+    best_mse_model = None
+    best_r2_model = None
 
-    config_directory = r"neural_networks\regression"
+    config_directory = r"deep_learning_models\regression"
     for idx, (root, dirs, files) in enumerate(os.walk(config_directory)):
         for file in files:
             if file == "metrics.json":
@@ -114,11 +116,11 @@ def find_best_nn():
                     # update best model for MSE score
                     if metrics_dict["test_MSE"] < best_mse:
                         best_mse = metrics_dict["test_MSE"]
-                        best_mse_model = f"{idx-1}, {root[27:]}"
+                        best_mse_model = f"{idx-1}, {root[32:]}"
                     # update best model for r_squared score
                     if metrics_dict["test_r_squared"] > best_r2:
                         best_r2 = metrics_dict["test_r_squared"]
-                        best_r2_model = f"{idx-1}, {root[27:]}"
+                        best_r2_model = f"{idx-1}, {root[32:]}"
     
     # Print scores and location of best model                    
     print(f"Best MSE is {best_mse:.2f}, model {best_mse_model}")
