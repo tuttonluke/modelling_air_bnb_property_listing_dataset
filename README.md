@@ -63,7 +63,7 @@ Four main models were tested: stochastic gradient descent, simple decision tree,
 
 The accuracy scores of these models are as follows:
 
-| Model          | Accuracy Score     | 
+| Model          |      R^2 Score     | 
 |----------------|--------------------|
 | SGDRegression  |       0.343        | 
 | Decision Tree  |       0.216        | 
@@ -80,7 +80,7 @@ Overfitting was reduced by optimising hyperparameters such as number of estimato
 
 The best model was selected based on the F1 score on predicitons of the validation set, and are as follows:
 
-| Model          | F1 Accuracy Score     | 
+|     Model      |   F1 Accuracy Score   | 
 |----------------|-----------------------|
 | Decision Tree  |         0.328         | 
 | Random Forest  |         0.381         | 
@@ -98,11 +98,16 @@ Technologies / Skills:
     - Backpropagation
     - Tensorboard
 
-A simple neural network was implemented in PyTorch
+A simple neural network was implemented in PyTorch with the aim of improving on the machine learning regression model predictions for nightly property price. The code implementing the dataset and neural network classes, as well as the training and evaluation functions can be found in the [deep_learning_regression_models.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/deep_learning_regression_models.py) file. Various numbers of hidden layers, number of hidden layer nodes, activation functions, and optimisers were tested, as well as extensive testing of learning rates and number of epochs. The performance metrics of the best model are as follows, along with a visualisation of the training loss in tensorboard.
 
+| Model Parameters   |      R^2 Score     | 
+|--------------------|--------------------|
+| # Hidden Layers    |       2            | 
+| Hidden Layer Width |       128          | 
+| Optimiser          |       Adam         | 
+| Epochs             |       26           |
+| Learning Rate      |       0.001        |
 
+![best_price_nights_model.png](/project_files/utils/documentation_images/best_price_nights_model.png?raw=True)
 
-# TODO
-## tensorboard visualisation
-
-### get feature names docstring
+# TO DO
