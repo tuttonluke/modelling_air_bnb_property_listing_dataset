@@ -6,7 +6,7 @@ class TabularData:
         self.data_file_path = "utils/tabular_data/clean_tabular_data.csv"
         self.tabular_df = pd.read_csv(self.data_file_path)
     
-    def get_numerical_data_df(self):
+    def get_numerical_data_df(self) -> pd.DataFrame:
         """Removes all non-numerical data from clean_tabular_data DataFrame,
         and returns the new DataFrame.
 
@@ -27,7 +27,7 @@ class TabularData:
                                                     ], axis=1)
         return self.tabular_df
     
-    def load_airbnb(self, df, label="Price_Night"):
+    def load_airbnb(self, df: pd.DataFrame, label: str="Price_Night") -> tuple:
         """Splits tabular data into a DataFrame of Features and a Series of labels.
 
         Parameters
@@ -46,7 +46,7 @@ class TabularData:
 
         return feature_df, label_series
     
-    def get_classification_data(self):
+    def get_classification_data(self) -> pd.DataFrame:
         """Removes all non-numerical data from clean_tabular_data DataFrame,
         except the label Category and returns the new DataFrame.
 
@@ -66,7 +66,20 @@ class TabularData:
                                                     ], axis=1)
         return self.tabular_df
     
-    def get_feature_names(self, label="Price_Night"):
+    def get_feature_names(self, label: str="Price_Night") -> list:
+        """Returns a list of column names in self.tabular_df,
+        excluding the one marked as the label.
+
+        Parameters
+        ----------
+        label : str, optional
+            Label column name, by default "Price_Night".
+
+        Returns
+        -------
+        list
+            List of feature names.
+        """
         feature_list = self.tabular_df.columns.values.tolist()
         feature_list.remove(label)
 
