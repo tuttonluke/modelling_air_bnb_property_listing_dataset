@@ -191,6 +191,18 @@ def evaluate_model(model, loader: DataLoader) -> tuple:
 # %% Main function
 
 def evaluate_best_model(label="Price_Night", n_configs=16):
+    """Loads, preprocesses, and splits data based on the target label given.
+    The data is then visualised, and a numner of neural network models trained.
+    The models are saved along with their hyperparameters and evaluation metrics,
+    and the best model is highlighted.
+
+    Parameters
+    ----------
+    label : str, optional
+        Name of target label, by default "Price_Night"
+    n_configs : int, optional
+        Number of model configurations to evaluate, by default 16
+    """
     # seed RNG for reproducability
     np.random.seed(42)
     torch.manual_seed(42)
@@ -221,4 +233,9 @@ def evaluate_best_model(label="Price_Night", n_configs=16):
     find_best_nn()
 # %%
 if __name__ == "__main__":
+    
+    # evaluate best model with Price_Night as the target label
     evaluate_best_model(label="Price_Night", n_configs=16)
+
+    # evaluate best model with number of bedrooms as the target label
+    evaluate_best_model(label="beds", n_configs=16)
