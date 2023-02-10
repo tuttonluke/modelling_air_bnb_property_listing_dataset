@@ -1,5 +1,5 @@
 # %%
-from read_tabular_data import TabularData
+from utils.read_tabular_data import TabularData
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
