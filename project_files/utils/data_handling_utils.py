@@ -26,7 +26,7 @@ def read_in_data(label: str="Price_Night") -> tuple:
 
     return feature_df_scaled, np.array(label_series), feature_names
 
-def split_data(feature_dataframe: pd.DataFrame, label_series:pd.Series, test_size: float=0.3):
+def split_data(feature_dataframe: pd.DataFrame, label_series:pd.Series, test_size: float=0.3) -> tuple:
     """Splits feature dataframe into train, test, and validation sets
     in a proportion of test_size.
 
