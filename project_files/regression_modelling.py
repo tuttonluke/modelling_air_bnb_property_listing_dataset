@@ -16,13 +16,14 @@ import pickle
 import typing
 import warnings
 # %%
-def read_in_data(label="Price_Night"):
+def read_in_data(label: str="Price_Night") -> tuple:
     """Reads in, cleans, splits, and normalises data for analysis.
 
     Returns
     -------
-    tupple
-        Tuple containing numpy arrays of features and labels.
+    tuple
+        Tuple containing numpy arrays of features and labels,
+        as well as a list of feature names.
     """
     tabular_df = TabularData()
     numerical_tabular_df = tabular_df.get_numerical_data_df()
@@ -32,10 +33,11 @@ def read_in_data(label="Price_Night"):
         label=label
     )
     feature_df_scaled = normalise_data(feature_df)
+    feature_names = tabular_df.get_feature_names(label=label)
 
-    return feature_df_scaled, np.array(label_series)
+    return feature_df_scaled, np.array(label_series), feature_names
 
-def split_data(feature_dataframe, label_series, test_size=0.3):
+def split_data(feature_dataframe: pd.DataFrame, label_series:pd.Series, test_size: float=0.3):
     """Splits feature dataframe into train, test, and validation sets
     in a proportion of test_size.
 
@@ -163,7 +165,7 @@ def custom_tune_regression_hyperparameters(model,
 
     return best_hyperparams, performance_metrics
 
-def sklearn_tune_hyperparameters_and_cv(model, x, y, hyperparam_grid):
+def sklearn_tune_hyperparameters_and_cv(model, x: pd.DataFrame, y: pd.Series, hyperparam_grid: dict) -> tuple:
     """Tunes hyperparameters using grid search and k-fold cross validation.
 
     Parameters
