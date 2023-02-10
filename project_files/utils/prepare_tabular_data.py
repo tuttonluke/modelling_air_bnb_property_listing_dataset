@@ -36,12 +36,15 @@ class AirBnbDataPreparation:
         self.listing_data.reset_index(drop=True, inplace=True)
     
     def clean_description_strings(self):
-        """_summary_
+        """Cleans strings by removing unwanted phrases and
+        punctuation, as well as correctly formatting each
+        description as a single string.
         """
         # change string to list
         for index in range(len(self.listing_data["Description"])):
             self.listing_data["Description"][index] = literal_eval(self.listing_data["Description"][index]) 
 
+        # remove repetitive phrases and unwanted punctuation
         for index, description in enumerate(self.listing_data["Description"]):
             for description_index, description_element in enumerate(description):
                 if description_element in ["About this space", 
