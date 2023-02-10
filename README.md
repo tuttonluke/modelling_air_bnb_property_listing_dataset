@@ -32,7 +32,7 @@ Images relevant to the AirBnB listings were saved on the cloud using Amazon Web 
 
 The following is a plot of of all the features containing numerical data which were used for regression and classification modelling. Each feature is visualised seperately in a scatter plot against the target label, Price per Night:
 
-![feature_visualisation](/project_files/documentation_images/feature_visualisation.png?raw=True)
+![feature_visualisation](/project_files/utils/documentation_images/feature_visualisation.png?raw=True)
 
 ## Milestone 2: Regression and Classification Models
 Technologies / Skills:
@@ -99,3 +99,10 @@ Technologies / Skills:
     - Tensorboard
 
 A simple neural network was implemented in PyTorch
+
+
+
+# TODO
+## tensorboard visualisation
+
+### get feature names docstring
