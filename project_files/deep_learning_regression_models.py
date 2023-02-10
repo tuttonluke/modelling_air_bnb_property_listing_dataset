@@ -2,9 +2,6 @@
 from sklearn.metrics import mean_squared_error, r2_score
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
-
-
-
 from utils.nn_utils import get_nn_config, generate_nn_configs, find_best_nn
 from utils.nn_utils import save_configs_as_yaml, save_model
 from utils.data_handling_utils import read_in_data

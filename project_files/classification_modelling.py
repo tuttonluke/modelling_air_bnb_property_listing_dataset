@@ -1,11 +1,11 @@
 # %%
-from read_tabular_data import TabularData
 from regression_modelling import normalise_data, split_data
 from regression_modelling import plot_predictions, save_model
 from sklearn import metrics
 from sklearn.exceptions import ConvergenceWarning 
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
+from utils.read_tabular_data import TabularData
 import matplotlib.pyplot as plt
 import numpy as np
 import os
