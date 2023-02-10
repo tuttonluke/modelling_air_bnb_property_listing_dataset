@@ -120,7 +120,7 @@ def train_model(model, loader: DataLoader, config_dict: dict):
 
     return training_duration
 
-def train_networks(in_features: int, hidden_width: int, out_features: int):
+def train_networks(train_loader: DataLoader, test_loader: DataLoader, in_features: int, hidden_width: int, out_features: int):
     """Trains models based on yaml configuration files stored in the
     config_dictionary file location. The model is then saved, and the
     metrics and hyperarameters are saved in .json files.
@@ -133,6 +133,8 @@ def train_networks(in_features: int, hidden_width: int, out_features: int):
             Number of hidden layer nodes.
         out_features : int
             Number of labels.
+        loader : DataLoader
+            Training set dataloader.
     """
     config_directory = "network_configs"
     metrics_dict = {
@@ -216,7 +218,7 @@ def find_best_nn():
     print(f"Best r_squared score is {best_r2:.4f}, model {best_r2_model}")
 
 # %% HELPER FUNCTIONS
-def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: list):
+def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: list, target: str):
     """Creates a 3x4 plot which visualises each feature seperately against
     the target label as a scatter plot. Also plots a line fitted to minimise
     the squared error in each case.
@@ -229,6 +231,8 @@ def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: li
         Label array.
     feature_names : list
         List of feature names for use in subplot titles.
+    target: str
+        Name of target.
     """
     fig, axs = plt.subplots(nrows=3, ncols=4, figsize=(30, 20))
     for i, (ax, col) in enumerate(zip(axs.flat, feature_names)):
@@ -241,10 +245,10 @@ def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: li
         ax.plot(x, p(x), "r--")
 
         fig.suptitle("Visualisation of Each Feature vs Target Label", y=0.93, size=24)
-        ax.set_title(col + " vs Price per Night", size=16)
+        ax.set_title(col + f" vs {target}", size=16)
         ax.set_xlabel(col, size=14)
         if i % 4 == 0:
-            ax.set_ylabel("Price per Night", size=14)
+            ax.set_ylabel(f"{target}", size=14)
     plt.show()
 
 def get_nn_config(file_path: str) -> dict:
@@ -343,18 +347,17 @@ if __name__ == "__main__":
     torch.manual_seed(42)
 
     # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
-    feature_df_normalised, label_series = read_in_data(label="Price_Night")
+    feature_df_normalised, label_series, feature_names = read_in_data(label="Price_Night")
 
-    # Visualise Data
+    # visualise data
     feature_names = ["# Guests", "# Beds", "# Bathrooms", "Cleanliness Rating",
                     "Accuracy Rating", "Communication Rating", "Location Rating",
                     "Check-in Rating", "Value Rating", "Amenities Count", "# Bedrooms"]
-    visualise_features_vs_target(feature_df_normalised, label_series, feature_names)
+    visualise_features_vs_target(feature_df_normalised, label_series, feature_names, target="Price per Night")
 
     # create torch dataset and split into train and test subsets
     dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
     train_subset, test_subset = random_split(dataset, [729, 100])
-
 
     # initialise DataLoaders
     BATCH_SIZE = 4
@@ -366,7 +369,7 @@ if __name__ == "__main__":
     save_configs_as_yaml(configurations_dict)
 
     # initialise, train, and evaluate models
-    train_networks(in_features=11, hidden_width=128, out_features=1)
+    train_networks(train_loader, test_loader, in_features=11, hidden_width=128, out_features=1)
 
     # find the best model from all those trained
     find_best_nn()
