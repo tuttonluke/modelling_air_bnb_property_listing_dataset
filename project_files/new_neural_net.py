@@ -1,5 +1,4 @@
 # %%
-from read_tabular_data import TabularData
 from regression_modelling import read_in_data
 from sklearn.metrics import mean_squared_error, r2_score
 from torch.utils.data import Dataset, DataLoader
@@ -344,9 +343,7 @@ if __name__ == "__main__":
     torch.manual_seed(42)
 
     # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
-    tabular_df = TabularData()
-    numerical_tabular_df = tabular_df.get_numerical_data_df()
-    feature_df_normalised, label_series = read_in_data()
+    feature_df_normalised, label_series = read_in_data(label="Price_Night")
 
     # Visualise Data
     feature_names = ["# Guests", "# Beds", "# Bathrooms", "Cleanliness Rating",
