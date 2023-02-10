@@ -1,6 +1,7 @@
 # %%
 import datetime
 import json
+import numpy as np
 import os
 import pickle
 import random
@@ -95,3 +96,30 @@ def save_model(model, hyperparams: dict, metrics: dict):
     # save model metrics in json file
     with open(f"{folder_path}/metrics.json", "w") as file:
         json.dump(metrics, file)
+
+def find_best_nn():
+    """Cycles through all metrics json files in designated config_directory
+    and prints the metrics and file location of the model with the highest
+    mean squared error and r_squares scores.
+    """
+    best_mse = np.inf
+    best_r2 = -np.inf
+
+    config_directory = r"neural_networks\regression"
+    for idx, (root, dirs, files) in enumerate(os.walk(config_directory)):
+        for file in files:
+            if file == "metrics.json":
+                with open(f"{root}\{file}") as metrics_json:
+                    metrics_dict = json.load(metrics_json)
+                    # update best model for MSE score
+                    if metrics_dict["test_MSE"] < best_mse:
+                        best_mse = metrics_dict["test_MSE"]
+                        best_mse_model = f"{idx-1}, {root[27:]}"
+                    # update best model for r_squared score
+                    if metrics_dict["test_r_squared"] > best_r2:
+                        best_r2 = metrics_dict["test_r_squared"]
+                        best_r2_model = f"{idx-1}, {root[27:]}"
+    
+    # Print scores and location of best model                    
+    print(f"Best MSE is {best_mse:.2f}, model {best_mse_model}")
+    print(f"Best r_squared score is {best_r2:.4f}, model {best_r2_model}")
