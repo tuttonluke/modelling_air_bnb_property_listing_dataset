@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 project_files/processed_images
 project_files/runs
+project_files/neural_networks.py
+project_files/new_neural_net.py
+
 
 # C extensions
 *.so
