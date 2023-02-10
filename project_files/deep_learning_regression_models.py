@@ -1,8 +1,11 @@
 # %%
 from sklearn.metrics import mean_squared_error, r2_score
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
-from utils.nn_utils import get_nn_config, save_model, find_best_nn
+from utils.nn_utils import get_nn_config, generate_nn_configs, find_best_nn
+from utils.nn_utils import save_configs_as_yaml, save_model
+from utils.data_handling_utils import read_in_data
+from utils.visualisation_utils import visualise_features_vs_target
 import itertools
 import numpy as np
 import os
@@ -185,3 +188,37 @@ def evaluate_model(model, loader: DataLoader) -> tuple:
 
     return mse, r2
 
+# %% Main function
+
+def evaluate_best_model(label="Price_Night", n_configs=16):
+    # seed RNG for reproducability
+    np.random.seed(42)
+    torch.manual_seed(42)
+
+    # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
+    feature_df_normalised, label_series, feature_names = read_in_data(label="Price_Night")
+
+    # visualise data
+    visualise_features_vs_target(feature_df_normalised, label_series, feature_names, target="Price per Night")
+
+    # create torch dataset and split into train and test subsets
+    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
+    train_subset, test_subset = random_split(dataset, [729, 100])
+
+    # initialise DataLoaders
+    BATCH_SIZE = 4
+    train_loader = DataLoader(train_subset, shuffle=True, batch_size=BATCH_SIZE)
+    test_loader = DataLoader(test_subset, batch_size=BATCH_SIZE)
+    
+    # generate and save a number of hyperparameter configurations
+    configurations_dict = generate_nn_configs(n_configs=n_configs)
+    save_configs_as_yaml(configurations_dict)
+
+    # initialise, train, and evaluate models
+    train_networks(train_loader, test_loader, in_features=11, hidden_width=128, out_features=1)
+
+    # find the best model from all those trained
+    find_best_nn()
+# %%
+if __name__ == "__main__":
+    evaluate_best_model(label="Price_Night", n_configs=16)
