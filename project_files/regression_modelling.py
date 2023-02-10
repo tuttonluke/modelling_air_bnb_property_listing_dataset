@@ -16,7 +16,7 @@ import pickle
 import typing
 import warnings
 # %%
-def read_in_data():
+def read_in_data(label="Price_Night"):
     """Reads in, cleans, splits, and normalises data for analysis.
 
     Returns
@@ -29,7 +29,7 @@ def read_in_data():
 
     feature_df, label_series = tabular_df.load_airbnb(
         numerical_tabular_df,
-        label="Price_Night"
+        label=label
     )
     feature_df_scaled = normalise_data(feature_df)
 
