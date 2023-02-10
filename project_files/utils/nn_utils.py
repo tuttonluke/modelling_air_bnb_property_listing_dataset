@@ -82,7 +82,7 @@ def save_model(model, hyperparams: dict, metrics: dict):
     """ 
     # create a folder with current date and time to save the model in 
     current_time = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
-    folder_path = f"neural_networks/regression/{current_time}"
+    folder_path = f"deep_learning_models/regression/{current_time}"
     os.mkdir(folder_path)   
     
     # save model

@@ -3,7 +3,7 @@ import pandas as pd
 #%%
 class TabularData:
     def __init__(self) -> None:
-        self.data_file_path = "tabular_data/clean_tabular_data.csv"
+        self.data_file_path = "utils/tabular_data/clean_tabular_data.csv"
         self.tabular_df = pd.read_csv(self.data_file_path)
     
     def get_numerical_data_df(self):
