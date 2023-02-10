@@ -12,6 +12,7 @@ import os
 import time
 import torch
 import torch.nn as nn
+import winsound
 # %% Dataset and Neural Network classes
 
 class AirBnBNightlyPriceImageDataset(Dataset):
@@ -208,10 +209,10 @@ def evaluate_best_model(label="Price_Night", n_configs=16):
     torch.manual_seed(42)
 
     # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
-    feature_df_normalised, label_series, feature_names = read_in_data(label="Price_Night")
+    feature_df_normalised, label_series, feature_names = read_in_data(label=label)
 
     # visualise data
-    visualise_features_vs_target(feature_df_normalised, label_series, feature_names, target="Price per Night")
+    visualise_features_vs_target(feature_df_normalised, label_series, feature_names, target=label)
 
     # create torch dataset and split into train and test subsets
     dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
@@ -237,5 +238,7 @@ if __name__ == "__main__":
     # evaluate best model with Price_Night as the target label
     evaluate_best_model(label="Price_Night", n_configs=16)
 
-    # evaluate best model with number of bedrooms as the target label
-    evaluate_best_model(label="beds", n_configs=16)
+    # make a sound when code has finished running
+    duration = 1000 # milliseconds
+    frequency = 440 # Hz
+    winsound.Beep(frequency, duration)
