@@ -7,6 +7,8 @@ from torch.utils.tensorboard import SummaryWriter
 import time
 import winsound
 import numpy as np
+from utils.data_handling_utils import read_in_data
+
 # %%
 def accuracy_test(y_pred, y_true):
     y_pred_softmax = torch.log_softmax(y_pred, dim=1)
@@ -84,11 +86,27 @@ def train(model, train_loader: DataLoader, val_loader: DataLoader, config_dict: 
 
     print(f"Training duration: {training_duration:.2} seconds.")
 # %%
-if __name__ == "__main":
+if __name__ == "__main__":
 
     # seed RNG for reproducability
     np.random.seed(42)
     torch.manual_seed(42)
+
+    # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
+    feature_df_normalised, label_series, feature_names = read_in_data(label="beds")
+    class_to_index = {
+    3 : 0,
+    4 : 1,
+    5 : 2,
+    6 : 3,
+    7 : 4,
+    8 : 5
+    }
+    index_to_class = {value : key for key, value in class_to_index.items()}
+    label_series.replace(class_to_index, inplace=True)
+    # create torch dataset and split into train and test subsets
+    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
+    train_subset, test_subset = random_split(dataset, [729, 100])
 
     # make a sound when code has finished running
     duration = 1000 # milliseconds
