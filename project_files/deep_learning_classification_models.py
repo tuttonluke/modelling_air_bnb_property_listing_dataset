@@ -8,6 +8,11 @@ import time
 import winsound
 import numpy as np
 from utils.data_handling_utils import read_in_data
+import seaborn as sns
+from utils.read_tabular_data import TabularData
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.metrics import confusion_matrix, classification_report
 
 # %%
 def accuracy_test(y_pred, y_true):
@@ -19,6 +24,20 @@ def accuracy_test(y_pred, y_true):
     accuracy = torch.round(accuracy*100)
 
     return accuracy
+
+def evaluate_test(model, test_loader: DataLoader):
+    y_pred = []
+    y_true = []
+    with torch.no_grad():
+        model.eval()
+        for X_batch, y_batch in test_loader:
+            y_test_pred = model(X_batch)
+            y_true.append(np.array(y_batch))
+            y_batch, y_pred_tags = torch.max(y_test_pred, dim = 1)
+            y_pred.append(y_pred_tags.numpy())
+    y_pred = [a.squeeze().tolist() for a in y_pred]
+
+    return y_pred, y_true
 
 
 def train(model, train_loader: DataLoader, val_loader: DataLoader, config_dict: dict):
@@ -42,7 +61,7 @@ def train(model, train_loader: DataLoader, val_loader: DataLoader, config_dict: 
         'train': [],
         "val": []
     }
-    for epoch in epochs:
+    for epoch in range(epochs):
         # TRAINING
         train_epoch_loss = 0.0
         train_epoch_acc = 0.0
@@ -85,6 +104,14 @@ def train(model, train_loader: DataLoader, val_loader: DataLoader, config_dict: 
     training_duration = train_end_time - train_start_time
 
     print(f"Training duration: {training_duration:.2} seconds.")
+
+    return accuracy_stats, loss_stats
+# %%
+def class_to_index(array):
+    for index, value in enumerate(array):
+        array[index] = int(value - 1)
+    
+    return array
 # %%
 if __name__ == "__main__":
 
@@ -93,22 +120,53 @@ if __name__ == "__main__":
     torch.manual_seed(42)
 
     # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
-    feature_df_normalised, label_series, feature_names = read_in_data(label="beds")
-    class_to_index = {
-    3 : 0,
-    4 : 1,
-    5 : 2,
-    6 : 3,
-    7 : 4,
-    8 : 5
-    }
-    index_to_class = {value : key for key, value in class_to_index.items()}
-    label_series.replace(class_to_index, inplace=True)
-    # create torch dataset and split into train and test subsets
-    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
-    train_subset, test_subset = random_split(dataset, [729, 100])
+    df = TabularData()
+    num_df = df.get_numerical_data_df()
+    ax = sns.countplot(x = "beds", data=num_df)
+    ax.set_title("Class Distribution")
+    ax.set_xlabel("Number of Beds")
+    ax.set_ylabel("Count")
 
+    feature_array_normalised, label_array, feature_names = read_in_data(label="beds")
+    label_array = class_to_index(label_array)
+
+    # create torch dataset and split into train and test subsets
+    dataset = AirBnBNightlyPriceImageDataset(feature_array_normalised, label_array)
+    train_subset, test_subset = random_split(dataset, [650, 179])
+    test_subset, val_subset = random_split(test_subset, [100, 79])
+
+    # dataloaders
+    train_loader = DataLoader(train_subset, shuffle=True, batch_size=4)
+    test_loader = DataLoader(test_subset, batch_size=1)
+    val_loader = DataLoader(val_subset, batch_size=1)
+
+    # model
+    config_dict = {
+        "learning_rate" : 0.001,
+        "epochs" : 10
+    }
+    model = NeuralNetwork(in_features=11, hidden_width=128, out_features=17)
+    accuracy_stats, loss_stats = train(model, train_loader, val_loader, config_dict)
+
+    # Create dataframes
+    train_val_acc_df = pd.DataFrame.from_dict(accuracy_stats).reset_index().melt(id_vars=['index']).rename(columns={"index":"epochs"})
+    train_val_loss_df = pd.DataFrame.from_dict(loss_stats).reset_index().melt(id_vars=['index']).rename(columns={"index":"epochs"})
+    # Plot the dataframes
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,7))
+    sns.lineplot(data=train_val_acc_df, x = "epochs", y="value", hue="variable",  ax=axes[0]).set_title('Train-Val Accuracy/Epoch')
+    sns.lineplot(data=train_val_loss_df, x = "epochs", y="value", hue="variable", ax=axes[1]).set_title('Train-Val Loss/Epoch')
+
+    #
+    y_test_pred, y_test_true = evaluate_test(model, test_loader)
+    confusion_matrix_df = pd.DataFrame(confusion_matrix(y_test_true, y_test_pred))#.rename(columns=index_to_class, index=index_to_class)
+
+    fig2, ax2 = plt.subplots(nrows=1, ncols=1)
+    sns.heatmap(confusion_matrix_df, annot=True)
+    print(classification_report(y_test_true, y_test_pred))
     # make a sound when code has finished running
     duration = 1000 # milliseconds
     frequency = 440 # Hz
     winsound.Beep(frequency, duration)
+
+# %%
+
