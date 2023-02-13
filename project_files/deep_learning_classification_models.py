@@ -1,23 +1,18 @@
 # %%
 from deep_learning_regression_models import AirBnBNightlyPriceImageDataset, NeuralNetwork
+from sklearn.metrics import f1_score
 from torch.utils.data import  DataLoader, random_split
-import torch
-import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
-import time
-import winsound
-import numpy as np
 from utils.data_handling_utils import read_in_data
-import seaborn as sns
-from utils.read_tabular_data import TabularData
-import matplotlib.pyplot as plt
-import pandas as pd
-from sklearn.metrics import confusion_matrix, classification_report
 from utils.nn_utils import get_nn_config, generate_nn_configs, find_best_classification_nn
 from utils.nn_utils import save_configs_as_yaml, save_model
-from sklearn.metrics import f1_score
-import os
 from utils.visualisation_utils import visualise_classification_metrics
+import numpy as np
+import os
+import time
+import torch
+import torch.nn as nn
+import winsound
 # %%
 def accuracy_test(y_pred, y_true):
     y_pred_softmax = torch.log_softmax(y_pred, dim=1)
@@ -169,7 +164,7 @@ def train_networks(train_loader: DataLoader, val_loader: DataLoader, test_loader
             fig1, fig2 = visualise_classification_metrics(accuracy_stats, loss_stats, y_test_pred, y_test_true)
 
             # save model
-            save_model(nn_model, config_dict, metrics_dict, fig1, fig2, model_type="classification")
+            save_model(nn_model, config_dict, metrics_dict, model_type="classification", fig1=fig1, fig2=fig2)
 
 def evaluate_best_model(label="beds", n_configs=16):
     """Loads, preprocesses, and splits data based on the target label given.
@@ -220,18 +215,8 @@ def class_to_index(array):
 # %%
 if __name__ == "__main__":
 
-    # # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
-    # df = TabularData()
-    # num_df = df.get_numerical_data_df()
-    # ax = sns.countplot(x = "beds", data=num_df)
-    # ax.set_title("Class Distribution")
-    # ax.set_xlabel("Number of Beds")
-    # ax.set_ylabel("Count")
-
-
-
-
-    evaluate_best_model(label="beds", n_configs=2)
+    # evaluate best model with beds as the target label
+    evaluate_best_model(label="beds", n_configs=16)
 
     # make a sound when code has finished running
     duration = 1000 # milliseconds
@@ -241,8 +226,14 @@ if __name__ == "__main__":
 # %%
 
 # TODO
-
-
-# move helper functions to utils
 # typing, docstrings, comments
-# confusion matrix visuals
+# class distribution?
+
+
+# # import AirBnB dataset, isolate and normalise numerical data and split into features and labels
+# df = TabularData()
+# num_df = df.get_numerical_data_df()
+# ax = sns.countplot(x = "beds", data=num_df)
+# ax.set_title("Class Distribution")
+# ax.set_xlabel("Number of Beds")
+# ax.set_ylabel("Count")
