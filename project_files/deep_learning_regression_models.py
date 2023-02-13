@@ -61,7 +61,7 @@ class NeuralNetwork(nn.Module):
             nn.Linear(hidden_width, hidden_width),
             nn.ReLU(),
             nn.Linear(hidden_width, hidden_width),
-            nn.ReLU(),
+            nn.ReLU(),   
             nn.Linear(hidden_width, out_features)
         )
     
