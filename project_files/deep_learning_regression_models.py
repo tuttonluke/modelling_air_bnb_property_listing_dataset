@@ -2,7 +2,7 @@
 from sklearn.metrics import mean_squared_error, r2_score
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
-from utils.nn_utils import get_nn_config, generate_nn_configs, find_best_nn
+from utils.nn_utils import get_nn_config, generate_nn_configs, find_best_regression_nn
 from utils.nn_utils import save_configs_as_yaml, save_model
 from utils.data_handling_utils import read_in_data
 from utils.visualisation_utils import visualise_features_vs_target
@@ -19,15 +19,21 @@ class AirBnBNightlyPriceImageDataset(Dataset):
     """Creates a PyTorch dataset  of the AirBnb data that returns a tuple 
     of (features, labels) when indexed.
     """
-    def __init__(self, features: torch.Tensor, labels: torch.Tensor) -> None:
+    def __init__(self, features: torch.Tensor, labels: torch.Tensor, model_type: str) -> None:
         super().__init__()
         # assert feature and label sets are the same length
         assert len(features) == len(labels)
         self.features = features
         self.labels = labels
+        self.model_type = model_type
     
     def __getitem__(self, index):
-        return torch.tensor(self.features[index], dtype=torch.float32), torch.tensor(self.labels[index], dtype=torch.long)
+        if self.model_type == "regression":
+            return torch.tensor(self.features[index], dtype=torch.float32), torch.tensor(self.labels[index], dtype=torch.float32)
+        elif self.model_type == "classification":
+            return torch.tensor(self.features[index], dtype=torch.float32), torch.tensor(self.labels[index], dtype=torch.long)
+        else:
+            return "Invalid model type. Enter 'regression' or 'classification'."
 
     def __len__(self):
         return len(self.features)
@@ -64,7 +70,7 @@ class NeuralNetwork(nn.Module):
 
 # %% Neural Network training and evaluation functions
 
-def train_model(model, loader: DataLoader, config_dict: dict):
+def train_model(model, loader: DataLoader, config_dict: dict) -> float:
     """Trains the model.
 
     Parameters
@@ -75,6 +81,11 @@ def train_model(model, loader: DataLoader, config_dict: dict):
         DataLoader of training data.
     config_dict : dict
         Dictionary of configuration hyperparameters.
+
+    Returns
+    -------
+    float
+        Training time in seconds.
     """
     # get hyperparameters
     learning_rate = config_dict["learning_rate"]
@@ -157,7 +168,7 @@ def train_networks(train_loader: DataLoader, test_loader: DataLoader, in_feature
             print(f"Test r_squared score: {metrics_dict['test_r_squared']:.4f}")
             print(f"Training duration: {training_time:.2f} seconds.\n")
             # save model
-            save_model(nn_model, config_dict, metrics_dict)
+            save_model(nn_model, config_dict, metrics_dict, model_type="regression")
 
 def evaluate_model(model, loader: DataLoader) -> tuple:
     """Calculate mean squared arro (MSE) and r^2 score
@@ -215,7 +226,7 @@ def evaluate_best_model(label="Price_Night", n_configs=16):
     visualise_features_vs_target(feature_df_normalised, label_series, feature_names, target=label)
 
     # create torch dataset and split into train and test subsets
-    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series)
+    dataset = AirBnBNightlyPriceImageDataset(feature_df_normalised, label_series, model_type="regression")
     train_subset, test_subset = random_split(dataset, [729, 100])
 
     # initialise DataLoaders
@@ -231,12 +242,12 @@ def evaluate_best_model(label="Price_Night", n_configs=16):
     train_networks(train_loader, test_loader, in_features=11, hidden_width=128, out_features=1)
 
     # find the best model from all those trained
-    find_best_nn()
+    find_best_regression_nn()
 # %%
 if __name__ == "__main__":
     
     # evaluate best model with Price_Night as the target label
-    evaluate_best_model(label="Price_Night", n_configs=16)
+    evaluate_best_model(label="Price_Night", n_configs=1)
 
     # make a sound when code has finished running
     duration = 1000 # milliseconds
