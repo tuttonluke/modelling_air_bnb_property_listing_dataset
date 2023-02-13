@@ -40,20 +40,33 @@ def visualise_features_vs_target(X: np.ndarray, y: np.ndarray, feature_names: li
     plt.show()
 
 def visualise_classification_metrics(accuracy_stats, loss_stats, y_test_pred, y_test_true):
-    # test visualisations
-    # Create dataframes
+    # Create dataframes of data for plotting
     train_val_acc_df = pd.DataFrame.from_dict(accuracy_stats).reset_index().melt(id_vars=['index']).rename(columns={"index":"epochs"})
     train_val_loss_df = pd.DataFrame.from_dict(loss_stats).reset_index().melt(id_vars=['index']).rename(columns={"index":"epochs"})
-    # Plot the dataframes
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,7))
-    sns.lineplot(data=train_val_acc_df, x = "epochs", y="value", hue="variable",  ax=axes[0]).set_title('Train-Val Accuracy/Epoch')
-    sns.lineplot(data=train_val_loss_df, x = "epochs", y="value", hue="variable", ax=axes[1]).set_title('Train-Val Loss/Epoch')
+    
+    # Plot accuracy and loss vs epoch
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(20,7))
 
+    sns.lineplot(data=train_val_acc_df, x = "epochs", y="value", hue="variable",  ax=ax1)
+    ax1.legend(fontsize=14, title_fontsize=16)
+    ax1.set_title("Train and Validation Accuracy vs Epoch", fontsize=18)
+    ax1.set_xlabel("Epoch", fontsize=16)
+    ax1.set_ylabel("Loss", fontsize=16)
+    
+    sns.lineplot(data=train_val_loss_df, x = "epochs", y="value", hue="variable", ax=ax2)
+    ax2.legend(fontsize=14, title_fontsize=16)
+    ax2.set_title("Train and Validation Loss vs Epoch", fontsize=18)
+    ax2.set_xlabel("Epoch", fontsize=16)
+    ax2.set_ylabel("Loss", fontsize=16)
 
+    # plot the confusion matrix
     confusion_matrix_df = pd.DataFrame(confusion_matrix(y_test_true, y_test_pred))
-    fig2, ax2 = plt.subplots(nrows=1, ncols=1)
+    
+    fig2, ax3 = plt.subplots(nrows=1, ncols=1)
     sns.heatmap(confusion_matrix_df, annot=True)
-
-    print(classification_report(y_test_true, y_test_pred))
+    ax3.set_title("Confusion Matrix", fontsize=14)
+    ax3.set_xlabel("True Label", fontsize=12)
+    ax3.set_ylabel("Predicted Label", fontsize=12)
 
     return fig, fig2
+# %%
