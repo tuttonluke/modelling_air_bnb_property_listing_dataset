@@ -84,7 +84,7 @@ def save_model(model, hyperparams: dict, metrics: dict, model_type: str):
     """ 
     # create a folder with current date and time to save the model in 
     current_time = str(datetime.datetime.now()).replace(" ", "_").replace(":", ".")
-    
+
     if model_type == "regression":
         folder_path = f"deep_learning_models/regression/{current_time}"
     elif model_type == "classification":
@@ -140,10 +140,8 @@ def find_best_classification_nn():
     and prints the metrics and file location of the model with the highest
     mean squared error and r_squares scores.
     """
-    best_mse = np.inf
-    best_r2 = -np.inf
-    best_mse_model = None
-    best_r2_model = None
+    best_f1 = -np.inf
+    best_f1_model = None
 
     config_directory = r"deep_learning_models\classification"
     for idx, (root, dirs, files) in enumerate(os.walk(config_directory)):
@@ -152,14 +150,9 @@ def find_best_classification_nn():
                 with open(f"{root}\{file}") as metrics_json:
                     metrics_dict = json.load(metrics_json)
                     # update best model for MSE score
-                    if metrics_dict["test_MSE"] < best_mse:
-                        best_mse = metrics_dict["test_MSE"]
-                        best_mse_model = f"{idx-1}, {root[32:]}"
-                    # update best model for r_squared score
-                    if metrics_dict["test_r_squared"] > best_r2:
-                        best_r2 = metrics_dict["test_r_squared"]
-                        best_r2_model = f"{idx-1}, {root[32:]}"
+                    if metrics_dict["f1_macro"] < best_f1:
+                        best_f1 = metrics_dict["f1_macro"]
+                        best_f1_model = f"{idx-1}, {root[32:]}"
     
     # Print scores and location of best model                    
-    print(f"Best MSE is {best_mse:.2f}, model {best_mse_model}")
-    print(f"Best r_squared score is {best_r2:.4f}, model {best_r2_model}")
+    print(f"Best F1 score is {best_f1:.2f}, model {best_f1_model}")
