@@ -69,7 +69,7 @@ def save_configs_as_yaml(config_list: list):
         with open(f"network_configs/{idx}.yaml", "w") as file:
             yaml.dump(config, file)
 
-def save_model(model, hyperparams: dict, metrics: dict, fig1: plt.Figure, fig2: plt.Figure, model_type: str):
+def save_model(model, hyperparams: dict, metrics: dict, model_type: str, fig1: plt.Figure=None, fig2: plt.Figure=None):
     """Saves the model, hyperparamers, and metrics in designated folder.
 
     Parameters
@@ -108,8 +108,9 @@ def save_model(model, hyperparams: dict, metrics: dict, fig1: plt.Figure, fig2: 
         json.dump(metrics, file)
     
     # save figures
-    fig1.savefig(f"{folder_path}/loss_visualisation.png")
-    fig2.savefig(f"{folder_path}/confusion_matrix.png")
+    if fig1 != None:
+        fig1.savefig(f"{folder_path}/loss_visualisation.png")
+        fig2.savefig(f"{folder_path}/confusion_matrix.png")
 
 def find_best_regression_nn():
     """Cycles through all metrics json files in designated config_directory
@@ -161,3 +162,4 @@ def find_best_classification_nn():
     
     # Print scores and location of best model                    
     print(f"Best F1 score is {best_f1:.2f}, model {best_f1_model}")
+# %%
