@@ -27,7 +27,7 @@ class AirBnBNightlyPriceImageDataset(Dataset):
         self.labels = labels
     
     def __getitem__(self, index):
-        return torch.tensor(self.features[index], dtype=torch.float32), torch.tensor(self.labels[index], dtype=torch.float32)
+        return torch.tensor(self.features[index], dtype=torch.float32), torch.tensor(self.labels[index], dtype=torch.long)
 
     def __len__(self):
         return len(self.features)
