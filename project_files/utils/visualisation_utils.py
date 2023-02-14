@@ -51,7 +51,7 @@ def visualise_classification_metrics(accuracy_stats, loss_stats, y_test_pred, y_
     ax1.legend(fontsize=14, title_fontsize=16)
     ax1.set_title("Train and Validation Accuracy vs Epoch", fontsize=18)
     ax1.set_xlabel("Epoch", fontsize=16)
-    ax1.set_ylabel("Loss", fontsize=16)
+    ax1.set_ylabel("Accuracy", fontsize=16)
     
     sns.lineplot(data=train_val_loss_df, x = "epochs", y="value", hue="variable", ax=ax2)
     ax2.legend(fontsize=14, title_fontsize=16)
