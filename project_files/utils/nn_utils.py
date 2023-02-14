@@ -25,7 +25,7 @@ def generate_nn_configs(n_configs: int) -> list:
     # generate values for applicable hyperparameters
     for i in range(n_configs):
         learning_rate = random.choice([1/i for i in [10**j for j in range(3, 4)]])
-        epochs = random.choice([i for i in range(5, 7)])
+        epochs = random.choice([i for i in range(24, 27)])
         config_dict = {
             "learning_rate" : learning_rate,
             "epochs" : epochs
