@@ -98,16 +98,38 @@ Technologies / Skills:
     - Backpropagation
     - Tensorboard
 
+### Regression
+
 A simple neural network was implemented in PyTorch with the aim of improving on the machine learning regression model predictions for nightly property price. The code implementing the dataset and neural network classes, as well as the training and evaluation functions can be found in the [deep_learning_regression_models.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/deep_learning_regression_models.py) file. Various numbers of hidden layers, number of hidden layer nodes, activation functions, and optimisers were tested, as well as extensive testing of learning rates and number of epochs. The performance metrics of the best model are as follows, along with a visualisation of the training loss in tensorboard.
 
-| Model Parameters   |      R^2 Score     | 
+| Model Parameters   |      Value         | 
 |--------------------|--------------------|
 | # Hidden Layers    |       2            | 
 | Hidden Layer Width |       128          | 
 | Optimiser          |       Adam         | 
 | Epochs             |       26           |
 | Learning Rate      |       0.001        |
+| R^2 Score          |       0.372        |
 
 ![best_price_nights_model.png](/project_files/utils/documentation_images/best_price_nights_model.png?raw=True)
 
-# TO DO
+### Classification
+
+The pipeline was reused for a classification problem, this time predicting the number of bedrooms in a property. Hence minor changes were required, such as the use of the Cross Entropy loss function and the F1 score metric for model evaluation. The code for this multiclass classification analysis can be found here: [deep_learning_classification_models.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/deep_learning_classification_models.py).
+
+The performance metrics for the best model are as follows:
+
+| Model Parameters   |      R^2 Score     | 
+|--------------------|--------------------|
+| # Hidden Layers    |       2            | 
+| Hidden Layer Width |       128          | 
+| Optimiser          |       Adam         | 
+| Epochs             |       19           |
+| Learning Rate      |       0.001        |
+| F1 Score           |       0.389        |
+
+The training and validation accuracy and losses were visualised, along with the confusion matrix of predictions on the test data set. The proficiency of the model is clearly lacking, but there is a small improvement over the machine learning models tested previously, as described above.
+
+![loss_visualisaiton.png](/project_files/deep_learning_models/classification/2023-02-14_10.16.18.178333/loss_visualisation.png?raw=True)
+
+![confusion_matrix.png](/project_files/deep_learning_models/classification/2023-02-14_10.16.18.178333/confusion_matrix.png?raw=True)
