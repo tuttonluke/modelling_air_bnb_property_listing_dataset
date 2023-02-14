@@ -5,7 +5,7 @@ Data Science Specialization Project of AiCore Curriculum. A dataset of informati
 Technologies / Skills:
 - Exploratory Data Analysis
     - Descriptive statistics (measures of central tendency and measures of dispersion)
-    - Data types (Categorical, ordinal, nominal)
+    - Data types (categorical, ordinal, nominal)
 - Data Visualisation
     - Plotly, plotly.express (scatter plots, bar graphs, box plots, histograms, choropleths, Sankey diagrams)
     - Matplotlib
@@ -23,12 +23,11 @@ Technologies / Skills:
     - opencv-python
     - PILLOW
 
-
 The python files [prepare_tabular_data.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/prepare_tabular_data.py) and [prepare_image_data.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/prepare_image_data.py) deal with data preparation for their respective data types.
 
 Simple Pandas DataFrame manipulations were used to deal with missing data, clean text data, and save the cleaned tabular data to a new csv file, named [clean_tabular_data.csv](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/tabular_data/clean_tabular_data.csv).
 
-Images relevant to the AirBnB listings were saved on the cloud using Amazon Web Services S3 service. The ImageProcessing class in the [prepare_image_data.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/prepare_image_data.py) file contains methods using the boto3 Softward Development Kit packageto download the images, and rescale the images to the height of the smallest image in the data set.
+Images relevant to the AirBnB listings were saved on the cloud using Amazon Web Services S3 service. The ImageProcessing class in the [prepare_image_data.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/prepare_image_data.py) file contains methods using the boto3 Softward Development Kit package to download the images, and rescale the images to the height of the smallest image in the data set.
 
 The following is a plot of of all the features containing numerical data which were used for regression and classification modelling. Each feature is visualised seperately in a scatter plot against the target label, Price per Night:
 
@@ -115,7 +114,7 @@ A simple neural network was implemented in PyTorch with the aim of improving on 
 
 ### Classification
 
-The pipeline was reused for a classification problem, this time predicting the number of bedrooms in a property. Hence minor changes were required, such as the use of the Cross Entropy loss function and the F1 score metric for model evaluation. The code for this multiclass classification analysis can be found here: [deep_learning_classification_models.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/deep_learning_classification_models.py).
+The pipeline was reused for a classification problem, this time predicting the number of bedrooms in a property. Minor changes from the regression case were therfore required, such as the use of the Cross Entropy loss function and the F1 score metric for model evaluation. The code for this multiclass classification analysis can be found here: [deep_learning_classification_models.py](https://github.com/tuttonluke/modelling_air_bnb_property_listing_dataset/blob/main/project_files/deep_learning_classification_models.py).
 
 The performance metrics for the best model are as follows:
 
