@@ -39,7 +39,7 @@ class AirBnBNightlyPriceImageDataset(Dataset):
         return len(self.features)
 
 class NeuralNetwork(nn.Module):
-    """Defines the neural network architecture for the regression problem.
+    """Defines the neural network architecture.
     """
     def __init__(self, in_features: int, hidden_width: int, out_features: int) -> None:
         """
@@ -152,7 +152,7 @@ def train_networks(train_loader: DataLoader, test_loader: DataLoader, in_feature
         "test_r_squared" : None,
         "training_time" : None
     }
-    # locate and loop through YAML configureation files
+    # locate and loop through YAML configureation files and collect the relevant metrics data
     for root, dirs, files in os.walk(config_directory):
         for file in files:
             nn_model = NeuralNetwork(in_features, hidden_width, out_features)
@@ -247,7 +247,7 @@ def evaluate_best_model(label="Price_Night", n_configs=16):
 if __name__ == "__main__":
     
     # evaluate best model with Price_Night as the target label
-    evaluate_best_model(label="Price_Night", n_configs=1)
+    evaluate_best_model(label="Price_Night", n_configs=16)
 
     # make a sound when code has finished running
     duration = 1000 # milliseconds
