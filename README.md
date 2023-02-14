@@ -1,5 +1,5 @@
-# modelling_air_bnb_property_listing_dataset
-Data Science Specialization Project of AiCore Curriculum
+# Modelling the Airbnb Property Listing Algorithm
+Data Science Specialization Project of AiCore Curriculum. A dataset of information about Airbnb properties is prepared using data cleaning, visualisation, and exploratory analysis. The data is stored on the cloud using AWS S3, and then a suite of machine learning and deep learning models are built (both regression and classification) to explore possibilities for property listing and ranking. 
 
 ## Milestone 1: Data Preparation
 Technologies / Skills:
